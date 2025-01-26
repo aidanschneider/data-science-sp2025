@@ -52,28 +52,41 @@ Some nomenclature:
 *Hint*: You can run `?diamonds` to get information on a built-in dataset.
 
 ```{r load-packages, eval=FALSE}
+library(tidyverse)
+?diamonds
+head(diamonds)
 ```
 
 ### __q2__ Run `glimpse(diamonds)`; what variables does `diamonds` have?
+```{r}
+glimpse(diamonds)
+#variables: carat, cut, color, clarity, depth, table, price
+```
 
 
 ### __q3__ Run `summary(diamonds)`; what are the common values for each of the
 variables? How widely do each of the variables vary?
+```{r}
+summary(diamonds)
+#common values: carat - 0.79 / cut - Ideal / color - G / clarity - SI1 / depth - 61.75 / table - 57.46 / price - %3933 / x - 5.7 / y - 5.7 / z - 3.5
+# variability:
+```
+
 
 *Hint*: The `Median` and `Mean` are common values, while `Min` and `Max` give us
 a sense of variation.
-
-```{r q3-task}
-summary(diamonds)
-```
 
 **Observations**:
 
 - (Write your observations here!)
 
+Observations: The price, carat, y, z, depth, and table of the diamonds in the dataset have large ranges of values, while the cut,
+color, clarity, and x of the diamonds have relatively smaller ranges. 
+
 You should always analyze your dataset in the simplest way possible, build
 hypotheses, and devise more specific analyses to probe those hypotheses. The
 `glimpse()` and `summary()` functions are two of the simplest tools we have.
+
 
 ## The Pipe Operator
 <!-- -------------------------------------------------- -->
@@ -103,6 +116,8 @@ turn it into `diamonds %>% glimpse()`.
 ### __q4__ Use the pipe operator to re-write `summary(diamonds)`.
 
 ```{r q4-task}
+diamonds %>% 
+  summary()
 ```
 
 ## Reading Data
@@ -113,7 +128,7 @@ So far we've only been looking at built-in datasets. Ultimately, we'll want to r
 ### __q5__ Use the function `read_csv()` to load the file `"./data/tiny.csv"`.
 
 ```{r q5-task}
-
+read_csv("./data/tiny.csv")
 df_q5
 ```
 
@@ -121,4 +136,4 @@ df_q5
 # Exit Ticket
 <!-- -------------------------------------------------- -->
 
-Once you have completed this exercise, make sure to fill out the **exit ticket survey**, [linked here](https://docs.google.com/forms/d/e/1FAIpQLSeuq2LFIwWcm05e8-JU84A3irdEL7JkXhMq5Xtoalib36LFHw/viewform?usp=pp_url&entry.693978880=e-data00-basics-assignment.Rmd).
+Once you have completed this exercise, make sure to fill out the **exit ticket survey**, [linked here](https://docs.google.com/forms/d/e/1FAIpLQLSeuq2LFIwWcm05e8-JU84A3irdEL7JkXhMq5Xtoalib36LFHw/viewform?usp=pp_url&entry.693978880=e-data00-basics-assignment.Rmd).
