@@ -75,6 +75,11 @@ with `Sepal.Length` between `5.1` and `6.4`?
 ## TODO: Consult the docs; Write your code here
 ?filter()
 
+iris %>% 
+  as_tibble() %>% 
+  filter(5.1 <= Sepal.Length,
+         Sepal.Length <= 6.4)
+  
 filter(iris, between(Sepal.Length, 5.1, 6.4)) 
 ```
 
