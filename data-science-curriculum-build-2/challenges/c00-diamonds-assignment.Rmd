@@ -1,7 +1,7 @@
 ---
 title: "Getting Started: Diamonds"
-author: "(Your name here)"
-date: 2020-
+author: "Aidan Schneider"
+date: 01-27-2025
 output:
   github_document:
     toc: true
@@ -54,27 +54,31 @@ In this first stage, you will explore the `diamonds` dataset and document your o
 
 ```{r q1-task}
 ## TASK: Plot `price` vs `carat` below
-## Your code here!
+ggplot(diamonds) +
+  geom_point(aes(x = carat, y = price))
 ```
 
 **Observations**:
 
-- (Write your observations here!)
+The most notable observation I make about the graph above is that the price of the diamond increases almost exponentially as its carat value increases. Another observation I make about the graph is that lower-carat-value diamonds are more common in the provided dataset than higher-carat-value diamonds. In addition, diamonds of carat value 1-3 have a larger range of prices than diamonds of carat value 0-1 and 3-5.  
+
 
 ### __q2__ Create a visualization showing variables `carat`, `price`, and `cut` simultaneously. Experiment with which variable you assign to which aesthetic (`x`, `y`, etc.) to find an effective visual.
 
 ```{r q2-task}
 ## TASK: Plot `price`, `carat`, and `cut` below
-## Your code here!
+ggplot(diamonds) +
+  geom_point(aes(x = carat, y = price, color = cut))
 ```
+
 
 **Observations**:
 
-- (Write your observations here!)
+As with the previous graph, the price increases almost exponentially relative to the increase in carat value. One new observation I make about this graph is that the Ideal cut diamonds generally tend to have a higher price relative to all other diamonds of similar carat, while Fair cut diamonds generally have a lower price. The only region in which this pattern does not hold is for higher carat diamonds, which may be due to different characteristics of those diamonds or a lack of data in the dataset on that range of carat diamonds. This could be ammended by adding more data to the dataset on diamonds with carat 3-5.
 
 
 # Communication
-<!-- -------------------------------------------------- -->
+<!-- ---------------------------------------------------->
 
 In this next stage, you will render your data exploration, push it to GitHub to share with others, and link your observations within our [Data Science Wiki](https://olin-data-science.fandom.com/wiki/Olin_Data_Science_Wiki).
 
@@ -101,5 +105,3 @@ Navigate to your GitHub repository's website and find the URL that corresponds t
 ### __q6__ *Prepare* to present your team's findings!
 
 If your team is on-deck, you are responsible for putting together a discussion of the challenge. I'll demonstrate how to do this by leading the discussion of Challenge 0.
-
-
