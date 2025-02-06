@@ -54,27 +54,29 @@ In this first stage, you will explore the `diamonds` dataset and document your o
 
 ```{r q1-task}
 ## TASK: Plot `price` vs `carat` below
-ggplot(diamonds) +
-  geom_point(aes(x = carat, y = price))
+diamonds %>%
+  ggplot(aes(x = carat, y = price)) +
+  geom_point()
 ```
 
 **Observations**:
 
-The most notable observation I make about the graph above is that the price of the diamond increases almost exponentially as its carat value increases. Another observation I make about the graph is that lower-carat-value diamonds are more common in the provided dataset than higher-carat-value diamonds. In addition, diamonds of carat value 1-3 have a larger range of prices than diamonds of carat value 0-1 and 3-5.  
+The most notable observation I make about the graph above is that there is a positive correlation between the carat value and the price of the diamond. Another observation I make about the graph is that lower-carat-value diamonds are more common in the provided dataset than higher-carat-value diamonds. In addition, diamonds of carat value 1-3 have a larger range of prices than diamonds of carat value 0-1 and 3-5.  
 
 
 ### __q2__ Create a visualization showing variables `carat`, `price`, and `cut` simultaneously. Experiment with which variable you assign to which aesthetic (`x`, `y`, etc.) to find an effective visual.
 
 ```{r q2-task}
 ## TASK: Plot `price`, `carat`, and `cut` below
-ggplot(diamonds) +
-  geom_point(aes(x = carat, y = price, color = cut))
+diamonds %>%
+  ggplot(aes(x = carat, y = price, color = cut)) +
+  geom_point()
 ```
 
 
 **Observations**:
 
-As with the previous graph, the price increases almost exponentially relative to the increase in carat value. One new observation I make about this graph is that the Ideal cut diamonds generally tend to have a higher price relative to all other diamonds of similar carat, while Fair cut diamonds generally have a lower price. The only region in which this pattern does not hold is for higher carat diamonds, which may be due to different characteristics of those diamonds or a lack of data in the dataset on that range of carat diamonds. This could be ammended by adding more data to the dataset on diamonds with carat 3-5.
+As with the previous graph, there is a clear positive correlation between the carat value of a diamond and its price. One new observation I make about this graph is that the Ideal cut diamonds generally tend to have a higher price relative to all other diamonds of similar carat, while Fair cut diamonds generally have a lower price. The only region in which this pattern does not hold is for higher carat diamonds, which may be due to different characteristics of those diamonds or a lack of data in the dataset on that range of carat diamonds. This could be ammended by adding more data to the dataset on diamonds with carat 3-5.
 
 
 # Communication
