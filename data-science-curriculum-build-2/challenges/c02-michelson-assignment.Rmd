@@ -85,17 +85,22 @@ df_michelson %>% glimpse()
 
 ```{r q1-task}
 ## TODO: Compute summaries
-df_q1 <- NA
+df_q1 <- df_michelson
 df_q1 %>%
+  group_by(Distinctness) %>% 
+  summarise(n = n(), meanVelocity = mean(Velocity)) %>% 
   arrange(desc(Distinctness)) %>%
   knitr::kable()
 ```
 
 **Observations**:
 - Write your observations here!
-  - (Your response here)
+  - Both tables have the same number of images for each category of distinctness
+  - The values for the mean velocities are different than 
 - Why might your table differ from Michelson's?
-  - (Your response here)
+  - My table might be different as the numbers have higher precision. By this I
+  mean that the means generated from my dataset go to a smaller decimal, while
+  the ones in Michelson's table appear to be rounded to the 10s place. 
 
 The `Velocity` values in the dataset are the speed of light *in air*; Michelson
 introduced a couple of adjustments to estimate the speed of light in a vacuum.
@@ -108,8 +113,9 @@ observations in the dataset.
 
 ```{r q2-task}
 ## TODO: Adjust the data, assign to df_q2
-df_q2 <- NA
-
+df_q2 <- df_michelson
+df_q2$VelocityVacuum <- df_q2$Velocity + 92
+  
 df_q2
 ```
 
@@ -137,13 +143,28 @@ problems uncertainty includes some amount of human judgment.[2]
 ```{r q3-task}
 ## TODO: Compare Michelson's estimate and error against the true value
 ## Your code here!
+true_error <- abs(LIGHTSPEED_MICHELSON - LIGHTSPEED_VACUUM)
+
+uncertain_up <- LIGHTSPEED_MICHELSON + LIGHTSPEED_PM
+uncertain_low <- LIGHTSPEED_MICHELSON - LIGHTSPEED_PM
+uncertain_range <- LIGHTSPEED_PM * 2
+
+cat("True Error: ", true_error," km/s ")
+cat("Uncertainty range: ", uncertain_range, " km/s ", " bounded by: ", uncertain_up, " and ", uncertain_low, " km/s ")
+
+if (true_error > uncertain_range) {
+  cat("Michelson's error is greater than the uncertainty!")
+} else {
+    cat("Michelson's error is less than the true error!")
+}
 ```
 
 **Observations**:
 - Is Michelson's estimate of the error (his uncertainty) greater or less than the true error?
-  - (Your response here)
+  - I found that Michelson's uncertainty is greater than the true error
 - Make a quantitative comparison between Michelson's uncertainty and his error.
-  - (Your response here)
+  - The true error is 151.542 km/s, while Michelson's uncertainty is 102 km/s
+  - This may be due to human error or error in instrumentation at the time. 
 
 The following plot shows all of Michelson's data as a [control chart](https://en.wikipedia.org/wiki/Control_chart); this sort of plot is common in manufacturing, where it is used to help determine if a manufacturing process is under [statistical control](https://en.wikipedia.org/wiki/Statistical_process_control). Each dot is one of Michelson's measurements, and the grey line connects the mean taken for each day. The same plot also shows simulated data using a probability model. We'll get into statistics later in the course; for now, let's focus on understanding what real and simulated data tend to look like.
 
@@ -208,15 +229,98 @@ df_q2 %>%
 
 **Observations**:
 Similarities
-- (your responses here)
+- The uncertainties in the real data and the simulated data are approximately 
+  the same
 Differences
-- (your responses here)
+- The mean lines are different between the real data and the simulated data, with
+  the mean peaking earlier (~Jun 09) in the real data and later (~Jun 25) in the 
+  simulated data
 
 ### __q5__ You have access to a few other variables. Construct a **at least three** visualizations of `VelocityVacuum` against these other factors. Are there other patterns in the data that might help explain the difference between Michelson's estimate and `LIGHTSPEED_VACUUM`?
 
+
+```{r}
+df_q5 <- df_q2
+
+# Graph 1: Seeing the Effect of Distinctness on the Range of Velocity of Light in a Vaccum 
+
+df_q5 %>% 
+  group_by(Distinctness) %>%
+  summarise(VelocityRange = max(VelocityVacuum) - min(VelocityVacuum))
+
+ggplot(df_q5, aes(x = factor(Distinctness), y = VelocityVacuum)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue") +
+  labs(
+    title = "Seeing the Effect of Distinctness on the Range of Velocity of Light in a Vaccum",
+    x = "Distinctness (1-3, 1 = Poor, 2 = Fair, 3 = Good)",
+    y = "Velocity in Vacuum (km/s)"
+  )
+```
+```{r}
+
+#Graph 2: Seeing the Effect of the Date on the Range of Vacuum Velocities of Light Measured
+
+ggplot(df_q5, aes(x = as.factor(Date), y = VelocityVacuum)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue") +
+  labs(
+    title = "Effect of the Date on the Range in Vacuum Velocities",
+    x = "Date",
+    y = "Vacuum Velocity (km/s)"
+  )  
+```
+
+```{r}
+
+#Graph 3: Examining the Effect of Temperature on Vacuum Velocity of Light
+
+mean_velocity_vacuum <- mean(df_q5$VelocityVacuum)
+
+ggplot(df_q5, aes(x = Temp, y = VelocityVacuum)) +
+  geom_point(color = "blue", size = 2) +
+  geom_hline(yintercept = mean_velocity_vacuum, color = "red", linetype = "dashed") +
+  labs(
+    title = "Temperature vs Vacuum Velocity with Mean Line",
+    x = "Temperature (°F)",
+    y = "Vacuum Velocity (km/s)"
+  )
+
+#checking to see if there indeed is a correlation
+correlation <- cor(df_q5$Temp, df_q5$VelocityVacuum)
+correlation
+
+```
+
+
+
 **Observations**:
 
-- Make sure to record observations on your graphs!
+Observations for Graph 1:
+- The graph suggests that there is a small positive correlation between the 
+  distinctness of the image and the range of vacuum velocity
+- The graph also suggests that a higher distinctness produces a larger range
+  in values for vacuum velocities of light
+- This could be because higher distinctness enables more precise measurements,
+  so smaller changes in vacuum velocity would be registered, unlike in lower
+  distinctness's where changes may be harder to measure
+  
+
+Observations for Graph 2:
+- The graph suggests that there is a large variation in the range and means of
+  measurements from day to day
+- One cause for these differences could be inaccuracies in measurements.
+  There is a chance that Michelson didn't perform all the measurements, and that
+  his assistants did not make as accurate measurements on some days
+- Another cause for this could be availability of data, where days with fewer 
+  measurements would have smaller quartile ranges and days with more measurements
+  would have larger quartile ranges 
+
+Observations for Graph 3:
+- The graph suggests that there is no correlation between temperature and the
+  velocity of light in a vacuum
+- any correlation that results from the graph should be attributed to errors 
+  in measurement at higher temperatures
+  
+  
 
 
 
