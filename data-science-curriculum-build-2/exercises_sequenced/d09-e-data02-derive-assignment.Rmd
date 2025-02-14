@@ -37,6 +37,7 @@ filter(diamonds, cut == "Ideal")
 diamonds %>% filter(cut == "Ideal")
 ```
 
+Difference: one follows tidy convention by using pipe operators, the other does not. 
 
 ## Summarizing
 
@@ -76,7 +77,7 @@ We can combine computation with a summary function to calculate more complex qua
 
 ```{r}
 ## NOTE: No need to edit
-diamonds %>% 
+diamonds %>%  
   summarize(n_onecarat = sum(carat >= 1))
 ```
 
@@ -87,7 +88,8 @@ Using `summarize()` and a logical summary function, determine the number of rows
 *Hint*: We learned about checking for equality in `e-data01-isolate`.
 
 ```{r q2-task}
-df_q2
+diamonds %>% 
+  summarize(n_Ideal = sum(cut == "Ideal"))
 ```
 
 The following test will verify that your `df_q2` is correct:
@@ -130,9 +132,12 @@ The function `group_by()` modifies how other dplyr verbs function. Uncomment the
 
 ```{r q3-task}
 diamonds %>%
-  ## group_by(color, clarity) %>%
+  group_by(color, clarity) %>%
   summarize(price_mean = mean(price))
 ```
+
+Before uncommenting: gives mean price of all diamonds
+After uncommenting: gives the mean price of each grouping of color and clarity of diamonds. 
 
 
 ## Row computations with `mutate()`
@@ -174,7 +179,7 @@ Assign the resulting tibble to `df_q4`, and assign the appropriate values to `co
 ## TODO: Compute the `cov_depth` and `cov_diff` and assign the result to df_q4
 df_q4 <-
   diamonds
-df_q4
+df_q4 
 ```
 
 **Observations**

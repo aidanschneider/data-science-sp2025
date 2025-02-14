@@ -26,11 +26,13 @@ Inspect the `diamonds` dataset. What do the `cut`, `color`, and `clarity` variab
 *Hint*: We learned how to inspect a dataset in `e-data-00-basics`!
 
 ```{r q1-task, eval=FALSE}
+glimpse(diamonds)
 ```
 
 ### __q2__ Standard checks
 
 Use your "standard checks" to determine what variables the dataset has.
+
 
 
 Now that we have the list of variables in the dataset, we know what we can visualize!
@@ -46,7 +48,7 @@ ggplot(            # 1. Starting a ggplot
   data = diamonds  # 2. Dataset to visualize
 ) +                # 3. Adding elements to the plot
   geom_point(      # 4. Geometry
-    mapping = aes( # 5. `Aes`thetic mapping
+    mapping = aes( # 5. Aesthetic mapping
       x = carat,   # 5.1. Mapping the `x` variable
       y = depth    # 5.2. Mapping the `y` variable
     )
@@ -73,7 +75,8 @@ Using `ggplot`, visualize `price` vs `carat` with points. What trend do you obse
 
 ```{r q3-task}
 ## TODO: Complete this code
-ggplot(diamonds)
+ggplot(diamonds) +
+  geom_point(aes(x = carat, y = price))
 ```
 
 **Observations**:
