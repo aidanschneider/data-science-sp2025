@@ -1,7 +1,7 @@
 ---
 title: "Aluminum Data"
-author: "(Your name here)"
-date: 2020-
+author: "Aidan Schneider"
+date: 02-23-2025
 output:
   github_document:
     toc: true
@@ -41,7 +41,7 @@ Make sure to commit both the challenge report (`report.md` file) and supporting 
 library(tidyverse)
 ```
 
-*Background*: In 1946, scientists at the Bureau of Standards tested a number of Aluminum plates to determine their [elasticity](https://en.wikipedia.org/wiki/Elastic_modulus) and [Poisson's ratio](https://en.wikipedia.org/wiki/Poisson%27s_ratio). These are key quantities used in the design of structural members, such as aircraft skin under [buckling loads](https://en.wikipedia.org/wiki/Buckling). These scientists tested plats of various thicknesses, and at different angles with respect to the [rolling](https://en.wikipedia.org/wiki/Rolling_(metalworking)) direction.
+*Background*: In 1946, scientists at thre Bureau of Standards tested a number of Aluminum plates to determine their [elasticity](https://en.wikipedia.org/wiki/Elastic_modulus) and [Poisson's ratio](https://en.wikipedia.org/wiki/Poisson%27s_ratio). These are key quantities used in the design of structural members, such as aircraft skin under [buckling loads](https://en.wikipedia.org/wiki/Buckling). These scientists tested plats of various thicknesses, and at different angles with respect to the [rolling](https://en.wikipedia.org/wiki/Rolling_(metalworking)) direction.
 
 # Loading and Wrangle
 <!-- -------------------------------------------------- -->
@@ -55,7 +55,7 @@ filename <- "./data/stang.csv"
 
 ## Load the data
 df_stang <- read_csv(filename)
-df_stang
+df_stang 
 ```
 
 Note that these data are not tidy! The data in this form are convenient for reporting in a table, but are not ideal for analysis.
@@ -66,10 +66,20 @@ Note that these data are not tidy! The data in this form are convenient for repo
 
 ```{r q1-task}
 ## TASK: Tidy `df_stang`
-df_stang_long <-
-  df_stang
+df_stang_long <- df_stang %>% 
+  pivot_longer(
+    names_to = c(".value", "angle"), 
+    names_sep = "_",
+    values_to = "angle",
+    starts_with("E") | starts_with("nu")
+  ) %>% 
+  filter(E >= 0) %>% 
+  # added for redundancy, in case nu was negative and E wasn't
+  filter(nu >= 0)
 
-df_stang_long
+df_stang_long$angle <- as.integer(df_stang_long$angle)
+ 
+df_stang_long 
 ```
 
 Use the following tests to check your work.
@@ -102,20 +112,45 @@ print("Very good!")
 ### __q2__ Perform a basic EDA on the aluminum data *without visualization*. Use your analysis to answer the questions under *observations* below. In addition, add your own *specific* question that you'd like to answer about the data---you'll answer it below in q3.
 
 ```{r q2-task}
-##
+
+#Running simple checks based off Day 2 exercise best practices
+df_stang_long %>% 
+  glimpse() %>% 
+  summary()
+
+
+#using group_by() and summarise() to check relationship between different variables in the data set
+
+df_stang_long %>% 
+  group_by(thick) %>% 
+  summarise(thick_mean = mean(E))
+
+df_stang_long %>% 
+  group_by(E) %>% 
+  summarise(E_mean = mean(nu))
+
+#checking the number of alloys in the data set
+
+df_stang_long %>% 
+  summarise(alloy_count = n_distinct(alloy))
+  
+
 ```
 
 **Observations**:
 
 - Is there "one true value" for the material properties of Aluminum?
-  - (Your response here)
+  - There is not, as Aluminum alloys can have different material properties based of characteristics including composition, thickness, and
+    grain. 
 - How many aluminum alloys are in this dataset? How do you know?
-  - (Your response here)
+  - Only 1 aluminum alloy type exists in this data set. I used "n_distinct" to count the number of distinct entries in the "alloy" column. This   function returned a value of 1, meaning there is only one distinct entry in that column, so only one type of alloy. 
 - What angles were tested?
-  - (Your response here)
+  - The angles tested were 0 degrees, 45 degrees, and 90 degrees from the angle of rolling
 - What thicknesses were tested?
-  - (Your response here)
+  - The thicknesses tested were 0.022, 0.032, 0.064, and 0.081. I assume these values to be inches.
 - (Write your own question here)
+
+Question: What is the relationship between Young's Modulus (E, a material's resistance to deformation) and Poisson's Ratio (nu, measure of deformation under stress) for Aluminum alloys?
 
 ## Visualize
 <!-- ------------------------- -->
@@ -123,12 +158,23 @@ print("Very good!")
 ### __q3__ Create a visualization to investigate your question from q2 above. Can you find an answer to your question using the dataset? Would you need additional information to answer your question?
 
 ```{r q3-task}
-## TASK: Investigate your question from q1 here
+## TASK: Investigate your question from q2 here
+
+ggplot(df_stang_long) +
+  geom_point(aes(x = E, y = nu)) +
+  geom_smooth(aes(E,nu), method="lm") +
+  ggtitle("Correlation Between Young's Modulus (E) and Poission's Ratio (nu)")
+
+
 ```
 
 **Observations**:
 
-- (Address your question from q1 here)
+- (Address your question from q2 here)
+According to the plot above, there is a clear positive correlation between the Young's Modulus (E) and the Possion's Ratio (nu) of the aluminum alloys in this dataset. This is a reasonable conclusion to reach as a higher Poisson's Ratio indicates that a material is harder to deform, while a higher Young's Modulus indicates that a material is stiffer and thus changes its shape less under stress. Although we are able to see a correlation between these values based solely on the data in the data set, it would be beneficial to collect more data to determine if this correlation stands true not only for more samples of the particular alloy included in the dataset, but for other aluminum alloys and potentially other materials entirely. 
+
+
+
 
 ### __q4__ Consider the following statement:
 
@@ -137,7 +183,7 @@ print("Very good!")
 Note that the "amount of material" would vary with the thickness of a tested plate. Does the following graph support or contradict the claim that "elasticity `E` is an intensive material property." Why or why not? Is this evidence *conclusive* one way or another? Why or why not?
 
 ```{r q4-vis}
-## NOTE: No need to change; run this chunk
+## NOTE: No need to change; run this
 df_stang_long %>%
 
   ggplot(aes(nu, E, color = as_factor(thick))) +
@@ -148,9 +194,14 @@ df_stang_long %>%
 **Observations**:
 
 - Does this graph support or contradict the claim above?
-  - (Your response here)
+  - The graph supports the claim made above, as the Elasticity values for all thicknesses except 0.081 are
+    all nearly the same. The 0.081 thickness samples seem to be outliers as they do not match the pattern
+    that the rest of the thicknesses do.
+  
 - Is this evidence *conclusive* one way or another?
-  - (Your response here)
+  - Although the evidence is conclusive for the set of materials tested in the data set, we cannot say
+    that the evidence is conclusive for all aluminum alloys or material types. More data would need to 
+    be collected in order to verify this fact by testing a larger array of materials.
 
 # References
 <!-- -------------------------------------------------- -->
