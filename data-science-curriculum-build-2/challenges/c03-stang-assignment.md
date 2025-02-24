@@ -157,12 +157,9 @@ df_stang_long <- df_stang %>%
     values_to = "angle",
     starts_with("E") | starts_with("nu")
   ) %>% 
-  filter(E >= 0) %>% 
-  # added for redundancy, in case nu was negative and E wasn't
-  filter(nu >= 0)
+  filter(E >= 0, nu >= 0) %>%
+  mutate(angle = as.integer(angle))
 
-df_stang_long$angle <- as.integer(df_stang_long$angle)
- 
 df_stang_long 
 ```
 
@@ -296,13 +293,25 @@ df_stang_long %>%
 #checking the number of alloys in the data set
 
 df_stang_long %>% 
-  summarise(alloy_count = n_distinct(alloy))
+  distinct(alloy)
 ```
 
     ## # A tibble: 1 × 1
-    ##   alloy_count
-    ##         <int>
-    ## 1           1
+    ##   alloy  
+    ##   <chr>  
+    ## 1 al_24st
+
+``` r
+df_stang_long %>% 
+  distinct(angle)
+```
+
+    ## # A tibble: 3 × 1
+    ##   angle
+    ##   <int>
+    ## 1     0
+    ## 2    45
+    ## 3    90
 
 **Observations**:
 
@@ -317,7 +326,7 @@ df_stang_long %>%
     one distinct entry in that column, so only one type of alloy.
 - What angles were tested?
   - The angles tested were 0 degrees, 45 degrees, and 90 degrees from
-    the angle of rolling
+    the direction of rolling.
 - What thicknesses were tested?
   - The thicknesses tested were 0.022, 0.032, 0.064, and 0.081. I assume
     these values to be inches.
@@ -388,14 +397,18 @@ df_stang_long %>%
 - Does this graph support or contradict the claim above?
   - The graph supports the claim made above, as the Elasticity values
     for all thicknesses except 0.081 are all nearly the same. The 0.081
-    thickness samples seem to be outliers as they do not match the
-    pattern that the rest of the thicknesses do.
+    thickness samples do not align with the trends that the rest of the
+    thicknesses do, which could result from differences in measurement
+    techniques and tools used.
 - Is this evidence *conclusive* one way or another?
-  - Although the evidence is conclusive for the set of materials tested
-    in the data set, we cannot say that the evidence is conclusive for
-    all aluminum alloys or material types. More data would need to be
-    collected in order to verify this fact by testing a larger array of
-    materials.
+  - Although the evidence shows strong indication of a trend in this
+    data set, we cannot say that the evidence is conclusive for all
+    aluminum alloys or material types. More data would need to be
+    collected in order to verify this fact by sticking with one method
+    of measurement (using one type of strain gauge) to reduce
+    variability in the data set, making more measurements of the same
+    aluminum alloy, and/or making more measurements on other material
+    types other than aluminum.
 
 # References
 
