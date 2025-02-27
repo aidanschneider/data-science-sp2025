@@ -153,9 +153,9 @@ cat("True Error: ", true_error," km/s ")
 cat("Uncertainty range: ", uncertain_range, " km/s ", " bounded by: ", uncertain_up, " and ", uncertain_low, " km/s ")
 
 if (true_error > uncertain_range) {
-  cat("Michelson's error is greater than the uncertainty!")
+  cat("Michelson's uncertainty is less than the true error!")
 } else {
-    cat("Michelson's error is less than the true error!")
+    cat("Michelson's uncertainty is greater than the true error!")
 }
 ```
 

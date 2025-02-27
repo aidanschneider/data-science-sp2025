@@ -240,13 +240,13 @@ cat("Uncertainty range: ", uncertain_range, " km/s ", " bounded by: ", uncertain
 
 ``` r
 if (true_error > uncertain_range) {
-  cat("Michelson's error is greater than the uncertainty!")
+  cat("Michelson's uncertainty is less than the true error!")
 } else {
-    cat("Michelson's error is less than the true error!")
+    cat("Michelson's uncertainty is greater than the true error!")
 }
 ```
 
-    ## Michelson's error is greater than the uncertainty!
+    ## Michelson's uncertainty is less than the true error!
 
 **Observations**: - Is Michelson’s estimate of the error (his
 uncertainty) greater or less than the true error? - I found that
