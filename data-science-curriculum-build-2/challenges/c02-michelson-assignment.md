@@ -1,7 +1,7 @@
 Michelson Speed-of-light Measurements
 ================
-(Your name here)
-2020-
+Aidan Schneider
+02-14-2025
 
 - [Grading Rubric](#grading-rubric)
   - [Individual](#individual)
@@ -174,8 +174,8 @@ in the dataset.
 
 ``` r
 ## TODO: Adjust the data, assign to df_q2
-df_q2 <- df_michelson
-df_q2$VelocityVacuum <- df_q2$Velocity + 92
+df_q2 <- df_michelson %>% 
+  mutate(VelocityVacuum = Velocity + 92)
   
 df_q2
 ```
@@ -250,7 +250,7 @@ if (true_error > uncertain_range) {
 
 **Observations**: - Is Michelson’s estimate of the error (his
 uncertainty) greater or less than the true error? - I found that
-Michelson’s uncertainty is greater than the true error - Make a
+Michelson’s uncertainty is less than the true error - Make a
 quantitative comparison between Michelson’s uncertainty and his error. -
 The true error is 151.542 km/s, while Michelson’s uncertainty is 102
 km/s - This may be due to human error or error in instrumentation at the
@@ -377,7 +377,8 @@ ggplot(df_q5, aes(x = as.factor(Date), y = VelocityVacuum)) +
     title = "Effect of the Date on the Range in Vacuum Velocities",
     x = "Date",
     y = "Vacuum Velocity (km/s)"
-  )  
+  ) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)) 
 ```
 
 ![](c02-michelson-assignment_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
