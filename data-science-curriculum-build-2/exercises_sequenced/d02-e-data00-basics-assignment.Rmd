@@ -52,9 +52,15 @@ Some nomenclature:
 *Hint*: You can run `?diamonds` to get information on a built-in dataset.
 
 ```{r load-packages, eval=FALSE}
+library(tidyverse)
+diamonds
 ```
 
 ### __q2__ Run `glimpse(diamonds)`; what variables does `diamonds` have?
+
+```{r}
+glimpse(diamonds)
+```
 
 
 ### __q3__ Run `summary(diamonds)`; what are the common values for each of the
@@ -103,6 +109,8 @@ turn it into `diamonds %>% glimpse()`.
 ### __q4__ Use the pipe operator to re-write `summary(diamonds)`.
 
 ```{r q4-task}
+diamonds %>% 
+  summary()
 ```
 
 ## Reading Data
@@ -113,10 +121,10 @@ So far we've only been looking at built-in datasets. Ultimately, we'll want to r
 ### __q5__ Use the function `read_csv()` to load the file `"./data/tiny.csv"`.
 
 ```{r q5-task}
+filename <- "./data/tiny.csv"
+df_q5 <- read_csv(filename)
 
-df_q5
 ```
-
 <!-- include-exit-ticket -->
 # Exit Ticket
 <!-- -------------------------------------------------- -->

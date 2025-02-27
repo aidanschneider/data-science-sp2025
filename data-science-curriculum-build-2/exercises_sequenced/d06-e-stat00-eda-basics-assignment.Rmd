@@ -37,7 +37,6 @@ Remember from `e02-data-basics` there were *simple checks* we're supposed to do?
 
 ```{r q0-task}
 
-
 ```
 
 I'm going to walk you through a train of thought I had when studying the diamonds dataset.

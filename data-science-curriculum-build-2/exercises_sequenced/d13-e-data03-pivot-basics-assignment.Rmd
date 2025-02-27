@@ -55,7 +55,7 @@ cases
 
 ```{r q1-test}
 ## TODO: Modify with your multiple choice number answer
-q1_answer <- 0
+q1_answer <- 2
 
 ## NOTE: The following will test your answer
 if (((q1_answer + 56) %% 3 == 1) & (q1_answer > 0)) {
@@ -87,7 +87,7 @@ alloys
 
 ```{r q2-test}
 ## TODO: Modify with your multiple choice number answer
-q2_answer <- 0
+q2_answer <- 3
 
 ## NOTE: The following will test your answer
 if (((q2_answer + 38) %% 3 == 2) & (q2_answer > 0)) {
@@ -200,6 +200,7 @@ Let's look at one more use of `pivot_longer` on the `alloys` dataset.
 
 ```{r alloys-demo1}
 ## NOTE: No need to edit; execute
+glimpse(alloys)
 alloys %>%
   pivot_longer(
     names_to = c("var", "angle"),
@@ -226,7 +227,7 @@ We'll continue tidying the `alloys` dataset with `pivot_wider`.
 ## NOTE: No need to edit; execute
 alloys %>%
   pivot_longer(
-    names_to = c("var", "angle"),
+    names_to = c("var", "angle"), 
     names_sep = "_",
     values_to = "val",
     starts_with("E") | starts_with("mu")
