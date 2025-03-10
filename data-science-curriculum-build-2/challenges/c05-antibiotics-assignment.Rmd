@@ -16,12 +16,12 @@ In this challenge, you will practice *iterating* on data visualization, and will
 
 <!-- include-rubric -->
 # Grading Rubric
-<!-- -------------------------------------------------- -->
+<!-- ------------------------------------------------>
 
 Unlike exercises, **challenges will be graded**. The following rubrics define how you will be graded, both on an individual and team basis.
 
 ## Individual
-<!-- ------------------------- -->
+<!-- --------------------------->
 
 | Category | Needs Improvement | Satisfactory |
 |----------|----------------|--------------|
@@ -54,11 +54,12 @@ filename <- "./data/antibiotics.csv"
 
 ## Load the data
 df_antibiotics <- read_csv(filename)
+df_antibiotics
 df_antibiotics %>% knitr::kable()
 ```
 
 # Visualization
-<!-- -------------------------------------------------- -->
+<!-- ---------------------------------------------------->
 
 ### __q1__ Prototype 5 visuals
 
@@ -75,7 +76,15 @@ For all five of the visuals, you must show information on *all 16 bacteria*. For
 In this visual you must show *all three* effectiveness values for *all 16 bacteria*. This means **it must be possible to identify each of the 16 bacteria by name.** You must also show whether or not each bacterium is Gram positive or negative.
 
 ```{r q1.1}
-# WRITE YOUR CODE HERE
+
+df_antibiotics %>%
+  ggplot(aes(x = penicillin, y = streptomycin, size = neomycin, label = bacteria)) +
+  geom_point() +
+  geom_text_repel(size = 3) +
+  scale_x_log10() +
+  scale_y_log10() +
+  ggtitle("Comparing MIC of different drugs against different bacteria")
+
 ```
 
 #### Visual 2 (All variables)
@@ -85,7 +94,21 @@ In this visual you must show *all three* effectiveness values for *all 16 bacter
 Note that your visual must be *qualitatively different* from *all* of your other visuals.
 
 ```{r q1.2}
-# WRITE YOUR CODE HERE
+
+df_q12 <- df_antibiotics %>% 
+  pivot_longer(cols = c(penicillin, streptomycin, neomycin),
+               names_to = "antibiotic",
+               values_to = "mic")
+
+df_q12 %>% 
+  ggplot(aes(fill = antibiotic, y= mic, x=bacteria)) +
+  scale_y_log10() +
+  geom_bar(position="dodge", stat="identity", width = 0.8) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Comparing MIC values of different antibiotics against different bacteria")
+  
+  
+  
 ```
 
 #### Visual 3 (Some variables)
@@ -95,7 +118,16 @@ In this visual you may show a *subset* of the variables (`penicillin`, `streptom
 Note that your visual must be *qualitatively different* from *all* of your other visuals.
 
 ```{r q1.3}
-# WRITE YOUR CODE HERE
+
+df_antibiotics %>% 
+  ggplot(aes(x= bacteria, y = penicillin)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_log10() + 
+  geom_hline(yintercept=0.1, linetype="dashed", color = "red") +
+  annotate("text", x=14.8, y=0.2, label="MIC Max Acceptable Value", size=3, color="black") +
+  ggtitle("Assessing the MIC values of penicilin against various bacteria")
+  
 ```
 
 #### Visual 4 (Some variables)
@@ -105,7 +137,20 @@ In this visual you may show a *subset* of the variables (`penicillin`, `streptom
 Note that your visual must be *qualitatively different* from *all* of your other visuals.
 
 ```{r q1.4}
-# WRITE YOUR CODE HERE
+df_long <- df_antibiotics %>%
+  pivot_longer(cols = c(penicillin, streptomycin, neomycin),
+               names_to = "antibiotic",
+               values_to = "mic")
+
+df_long %>% 
+  ggplot(aes(x = antibiotic, y = mic, color = antibiotic)) + 
+  geom_boxplot() + 
+  facet_wrap(~antibiotic) + 
+  scale_y_log10() +
+  theme(legend.position = "none") + 
+  labs(x = "Antibiotic", y = "MIC Values") +
+  ggtitle("Assessing the range of MIC Values of Different Antibiotics")
+  
 ```
 
 #### Visual 5 (Some variables)
@@ -115,7 +160,12 @@ In this visual you may show a *subset* of the variables (`penicillin`, `streptom
 Note that your visual must be *qualitatively different* from *all* of your other visuals.
 
 ```{r q1.5}
-# WRITE YOUR CODE HERE
+df_antibiotics %>%
+  ggplot(aes(fill = bacteria, x = gram)) + 
+  geom_bar(position = "stack") +
+  geom_text(stat = "count", aes(label = bacteria), position = position_stack(vjust = 0.5), color = "white") +
+  labs(y = "Count", x = "Gram Type") +
+  ggtitle("Comparing the Gram Types of Different bacteria")
 ```
 
 ### __q2__ Assess your visuals
@@ -132,11 +182,12 @@ There are **two questions** below; use your five visuals to help answer both Gui
 
 *Observations*
 - What is your response to the question above?
-  - (Write your response here)
+  - The most effective antibiotic appears to be neomycin
 - Which of your visuals above (1 through 5) is **most effective** at helping to answer this question?
-  - (Write your response here)
+  - The most effective visual to answer this question was Visual 2. 
 - Why?
-  - (Write your response here)
+  - I was able to analyze the effectiveness of each of the antibiotics by their position along the x and y axis for streptomycin and penicilin
+  - for the third antibiotic i am able to determine the effectiveness based on the area of each of the points
 
 #### Guiding Question 2
 
@@ -146,11 +197,12 @@ In 1974 *Diplococcus pneumoniae* was renamed *Streptococcus pneumoniae*, and in 
 
 *Observations*
 - What is your response to the question above?
-  - (Write your response here)
+  - Diplococcus pneumoniae was renamed Streptococcus pneumoniae as it was found to be more associated with the streptococcus genus
 - Which of your visuals above (1 through 5) is **most effective** at helping to answer this question?
-  - (Write your response here)
+  - Visual 5 was most effective in helping me answer this question
 - Why?
-  - (Write your response here)
+  - The most common type of bacteria in this dataset that were gram positive were the Streptococcus bacteria
+  - the Diplococcus pneumoniae bacteria is also gram positive, which means it shares traits with Streptococcus bacteria, possibly contributing to its renaming
 
 
 # References
