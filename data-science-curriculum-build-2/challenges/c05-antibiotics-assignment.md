@@ -104,7 +104,7 @@ df_antibiotics <- read_csv(filename)
     ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
 
 ``` r
-df_antibiotics
+df_antibiotics 
 ```
 
     ## # A tibble: 16 × 5
