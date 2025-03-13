@@ -1,7 +1,7 @@
 ---
 title: "COVID-19"
-author: "(Your name here)"
-date: 2020-
+author: "Aidan Schneider"
+date: 03-12-2025
 output:
   github_document:
     toc: true
@@ -79,7 +79,8 @@ That's the high-level view; now let's dig into the details.
 
 ```{r q1-task}
 ## TASK: Load the census bureau data with the following tibble name.
-df_pop <- NA
+df_pop <- read.csv('/Users/aidanschneider_1/Documents/Olin/2025_Spring/Data_Science/data-science-sp2025/data-science-curriculum-build-2/challenges/data/productDownload_2025-03-12T114212/ACSDT5Y2018.B01003-Data.csv', skip = 1)
+df_pop
 ```
 
 *Note*: You can find information on 1-year, 3-year, and 5-year estimates [here](https://www.census.gov/programs-surveys/acs/guidance/estimates.html). The punchline is that 5-year estimates are more reliable but less current.
@@ -95,7 +96,7 @@ The New York Times is publishing up-to-date data on COVID-19 on [GitHub](https:/
 
 ```{r q2-task}
 ## TASK: Find the URL for the NYT covid-19 county-level data
-url_counties <- NA_character_
+url_counties <- 'https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv'
 ```
 
 Once you have the url, the following code will download a local copy of the data, then load the data into R.
@@ -113,6 +114,7 @@ curl::curl_download(
 
 ## Loads the downloaded csv
 df_covid <- read_csv(filename_nyt)
+
 ```
 
 You can now re-run the chunk above (or the entire notebook) to pull the most recent version of the data. Thus you can periodically re-run this notebook to check in on the pandemic as it evolves.
@@ -136,7 +138,10 @@ To join these datasets, we'll need to use [FIPS county codes](https://en.wikiped
 
 ```{r q3-task}
 ## TASK: Create a `fips` column by extracting the county code
-df_q3 <- NA
+df_q3 <- df_pop %>% 
+  mutate(fips = substr(Geography, nchar(Geography)-4, nchar(Geography)))
+
+df_q3
 ```
 
 Use the following test to check your answer.
@@ -146,8 +151,8 @@ Use the following test to check your answer.
 ## Check known county
 assertthat::assert_that(
               (df_q3 %>%
-              filter(str_detect(`Geographic Area Name`, "Autauga County")) %>%
-              pull(fips)) == "01001"
+              filter(str_detect(Geographic.Area.Name, "Autauga County")) %>% #Note: changed "Geographic Area Name" to "Geographic.Area.Name" to
+              pull(fips)) == "01001"                                         # to reflect actual column name
             )
 print("Very good!")
 ```
@@ -156,7 +161,8 @@ print("Very good!")
 
 ```{r q4-task}
 ## TASK: Join df_covid and df_q3 by fips.
-df_q4 <- NA
+df_q4 <- merge(df_covid, df_q3, by = "fips", all.x = TRUE)
+df_q4
 ```
 
 Use the following test to check your answer.
@@ -203,8 +209,9 @@ df_data <-
     fips,
     cases,
     deaths,
-    population = `Estimate!!Total`
+    population = `Estimate..Total` #Note: Changed "Estimate!!Total" to "Estimate..Total" to reflect actual column name
   )
+df_data
 ```
 
 # Analyze
@@ -219,8 +226,13 @@ Now that we've done the hard work of loading and wrangling the data, we can fina
 
 ```{r q5-task}
 ## TASK: Normalize cases and deaths
-df_normalized <-
-  df_data
+df_normalized <- df_data %>% 
+  mutate(
+    cases_per100k = (cases / population) * 100000,
+    deaths_per100k = (deaths / population) * 100000
+    )
+
+df_normalized
 ```
 
 You may use the following test to check your work.
@@ -289,12 +301,20 @@ Compute the mean and standard deviation for `cases_per100k` and `deaths_per100k`
 
 ```{r q6-task}
 ## TASK: Compute mean and sd for cases_per100k and deaths_per100k
+
+df_normalized %>% 
+  summarise(mean_casesper100k = mean(cases_per100k, na.rm = TRUE), 
+            mean_deathsper100k = mean(deaths_per100k, na.rm = TRUE), 
+            std_casesper100k = sd(cases_per100k, na.rm = TRUE), 
+            std_deathsper100k = sd(deaths_per100k, na.rm = TRUE)
+            )
+
 ```
 
 - Which rows did you pick?
-  - (Your response here)
+  - I only took the mean and standard deviation of the rows that did not contain NA values
 - Why?
-  - (Your response here)
+  - If I were to take the mean or standard deviation of a column including the NA rows I would get NA as a result
 
 ### __q7__ Find and compare the top 10
 
@@ -303,14 +323,30 @@ Find the top 10 counties in terms of `cases_per100k`, and the top 10 in terms of
 ```{r q7-task}
 ## TASK: Find the top 10 max cases_per100k counties; report populations as well
 
+top10_cases <- df_normalized %>% 
+  arrange(desc(cases_per100k)) %>% 
+  slice_head(n = 10)
+
+top10_cases
+
 ## TASK: Find the top 10 deaths_per100k counties; report populations as well
+
+top10_deaths <- df_normalized %>% 
+  arrange(desc(deaths_per100k)) %>% 
+  slice_head(n = 10)
+
+top10_deaths
+
 ```
 
 **Observations**:
 
-- (Note your observations here!)
+- The counties with the highest case rate and death rate are both located in Texas (Loving and McMullen)
+- Both of these counties have relatively small populations (Loving = 102 lowest in the US, McMullen = 662)
+  - this may be why the cases and deaths per 100k people are the highest, as only a few cases and deaths creates a larger ratio in counties with 
+    such small populations than in counties with larger populations
 - When did these "largest values" occur?
-  - (Your response here)
+  - The largest values occured mostly around March-May of 2022
 
 ## Self-directed EDA
 <!-- ------------------------- -->
@@ -327,7 +363,41 @@ Find the top 10 counties in terms of `cases_per100k`, and the top 10 in terms of
 - Fix the *geographic exceptions* noted below to study New York City.
 - Your own idea!
 
-**DO YOUR OWN ANALYSIS HERE**
+
+QUESTION: How did the average amount of cases change by state throughout the course of COVID?  
+
+
+```{r}
+
+df_eda <- df_normalized %>% 
+  mutate(
+    year = year(date),
+    month = month(date),
+  ) %>% 
+  group_by(year, month, state) %>% 
+  summarise(
+    avg_casesper100k = mean(cases_per100k, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(df_eda, aes(x = as.Date(paste(year, month, "01", sep = "-")), y = avg_casesper100k, color = state)) +
+  geom_line(aes(color = state), size = 1, alpha = 0.4) + # Color each state's line
+  theme(legend.position="none") +
+  labs(
+    title = "Cases Per 100k people by State Over Time",
+    x = 'Date',
+    y = 'Cases per 100k people'
+    )
+
+
+  
+  
+```
+
+Here we can observe that the cases per 100k people increased over the course of COVID, with periods of 
+plateuing. These plateus can be attributed to vaccines being developed for different strains or tightening
+of quarantine restricitions, and the sharp increases can be attributed to new strains or loosening of 
+quarantine restrictions. 
 
 ### Aside: Some visualization tricks
 <!-- ------------------------- -->
@@ -341,12 +411,11 @@ df_normalized %>%
     state == "Massachusetts", # Focus on Mass only
     !is.na(fips), # fct_reorder2 can choke with missing data
   ) %>%
-
   ggplot(
     aes(date, cases_per100k, color = fct_reorder2(county, date, cases_per100k))
   ) +
   geom_line() +
-  scale_y_log10(labels = scales::label_number_si()) +
+  scale_y_log10(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
   scale_color_discrete(name = "County") +
   theme_minimal() +
   labs(
