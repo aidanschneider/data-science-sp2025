@@ -80,7 +80,6 @@ That's the high-level view; now let's dig into the details.
 ```{r q1-task}
 ## TASK: Load the census bureau data with the following tibble name.
 df_pop <- read.csv('/Users/aidanschneider_1/Documents/Olin/2025_Spring/Data_Science/data-science-sp2025/data-science-curriculum-build-2/challenges/data/productDownload_2025-03-12T114212/ACSDT5Y2018.B01003-Data.csv', skip = 1)
-df_pop
 ```
 
 *Note*: You can find information on 1-year, 3-year, and 5-year estimates [here](https://www.census.gov/programs-surveys/acs/guidance/estimates.html). The punchline is that 5-year estimates are more reliable but less current.
@@ -140,8 +139,6 @@ To join these datasets, we'll need to use [FIPS county codes](https://en.wikiped
 ## TASK: Create a `fips` column by extracting the county code
 df_q3 <- df_pop %>% 
   mutate(fips = substr(Geography, nchar(Geography)-4, nchar(Geography)))
-
-df_q3
 ```
 
 Use the following test to check your answer.
@@ -162,7 +159,6 @@ print("Very good!")
 ```{r q4-task}
 ## TASK: Join df_covid and df_q3 by fips.
 df_q4 <- merge(df_covid, df_q3, by = "fips", all.x = TRUE)
-df_q4
 ```
 
 Use the following test to check your answer.
@@ -211,7 +207,6 @@ df_data <-
     deaths,
     population = `Estimate..Total` #Note: Changed "Estimate!!Total" to "Estimate..Total" to reflect actual column name
   )
-df_data
 ```
 
 # Analyze
@@ -231,8 +226,6 @@ df_normalized <- df_data %>%
     cases_per100k = (cases / population) * 100000,
     deaths_per100k = (deaths / population) * 100000
     )
-
-df_normalized
 ```
 
 You may use the following test to check your work.
@@ -327,7 +320,7 @@ top10_cases <- df_normalized %>%
   arrange(desc(cases_per100k)) %>% 
   slice_head(n = 10)
 
-top10_cases
+
 
 ## TASK: Find the top 10 deaths_per100k counties; report populations as well
 
@@ -335,7 +328,7 @@ top10_deaths <- df_normalized %>%
   arrange(desc(deaths_per100k)) %>% 
   slice_head(n = 10)
 
-top10_deaths
+
 
 ```
 
