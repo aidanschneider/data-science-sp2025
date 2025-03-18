@@ -223,19 +223,22 @@ df_q2 %>%
   geom_boxplot() +
   labs(title = "GDP per Capita vs Continent in 1952",
        x = "Continent",
-       y = "GDP per Capita")
+       y = "GDP per Capita") +
+  scale_y_log10()
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q2-task-1.png)<!-- -->
 
 **Observations**:
 
-- Write your observations here
+- Write your observations here (REVISION)
 
 I chose to make a box plot to compare the range of GDP Per Capita of
-each continent. The above plot shows that the 1st-3rd quartiles of each
-continent’s GDP per Capita are all relatively the same, with a few
-outliers in the Americas and Asia boxplots.
+each continent. The above plot shows that the GDP Per Capita varies
+significantly by continent, with Asia and Africa having the lowest GDP
+Per Capita’s on average and Oceania and Europe having the highest GDP
+Per Capita’s on average. There are also some outlier countries for the
+Americas boxplot and the Asia boxplot.
 
 **Difficulties & Approaches**:
 
@@ -337,10 +340,22 @@ gapminder %>%
   group_by(continent) %>% 
   ggplot(aes(continent, gdpPercap)) +
   geom_boxplot(aes(fill = factor(year)), alpha = 0.6) +
-  geom_point(data = . %>% filter(country %in% c("United Kingdom", "United States", "Australia", "Bahrain", "Canada", "Denmark", "Kuwait", "Netherlands", "New Zealand", "Norway", "Switzerland")), 
+  geom_point(data = . %>% 
+               filter(country %in% c("United Kingdom", 
+                                     "United States",
+                                     "Australia", 
+                                     "Bahrain", 
+                                     "Canada", 
+                                     "Denmark",
+                                     "Kuwait",
+                                     "Netherlands", 
+                                     "New Zealand",
+                                     "Norway", 
+                                     "Switzerland")), 
              aes(color = country), size = 2) + 
   facet_wrap(~ year) +
-  labs(title = paste("GDP per Capita vs Year (", year_min, " and ", year_max, ")", sep = ""), x = "Year", y = "GDP per Capita")
+  labs(title = paste("GDP per Capita vs Year (", year_min, " and ", year_max,
+                     ")", sep = ""), x = "Year", y = "GDP per Capita")
 ```
 
 ![](c04-gapminder-assignment_files/figure-gfm/q4-task-1.png)<!-- -->
@@ -433,25 +448,50 @@ gdp per capita’s than countries in Europe and the Americas
 ``` r
 ## TASK: Your third graph
 
-gapminder %>%
-  ggplot(aes(x = pop, y = lifeExp, color = continent)) + 
-  geom_point(alpha = 0.7) + 
-  scale_x_log10() + 
-  facet_wrap(~ continent) + 
-  labs(
-    title = "Population Growth vs Life Expectancy by Continent",
-    x = "Population (Log Scale)",
-    y = "Life Expectancy (yr)"
-  )
+df_organize <- gapminder %>% 
+  mutate(region = case_when(
+    country %in% c("Portugal", "Spain", "Italy", "Greece", "Albania", "Serbia", 
+                   "Bulgaria", "Croatia", "Bosnia and Herzegovina", 
+                   "North Macedonia") ~ "Southern Europe",
+    country %in% c("Finland", "Sweden", "Norway", "Denmark", "Iceland", 
+                   "Estonia", "Latvia", "Lithuania", "France", "Germany", 
+                   "United Kingdom") ~ "Northern Europe",
+    TRUE ~ "Other")
+    )
+
+
+df_q5 <- df_organize %>% 
+  filter(region %in% c("Southern Europe", "Northern Europe"))
+  
+  
+ggplot(df_q5, aes(x = year, y = gdpPercap, color = region, group = country)) +
+  geom_line() +
+  geom_smooth(aes(group = region), method = "loess", se = FALSE, size = 1.2, linetype = "dotted") +
+  labs(title = "GDP per Capita Growth in Southern vs Northern Europe (by Country)",
+       x = "Year",
+       y = "GDP per Capita") +
+  scale_y_log10()
 ```
+
+    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    ## ℹ Please use `linewidth` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](c04-gapminder-assignment_files/figure-gfm/q5-task3-1.png)<!-- -->
 
-- (Your notes and observations here) Question: How does the growth of
-  population influence Life Expectancy?
+- (Your notes and observations here) Question: How has the GDP Per
+  Capita growth differed between Northern Europe and Southern Europe?
 
-Observations: - The plots above show that there is a general positive
-correlation between an increase in population and life expectancy -
-There are a few clusters of points in Africa that do not follow this
-pattern, which could be due to overpopulation or an extreme event such
-as war and/or famine.
+Observations: - On average Southern European countries have had lower
+GDP per Capita’s than Northern European countries - This could be
+attributed to the stronger economies of Northern European countries -
+Many Southern European countries were also subject to oppressive regimes
+(e.g. Spain, Italy, Yugoslavia, Albania) - Another feature that many
+Southern European countries share is a GDP Per Capita “dip” in the
+1990’s. These countries are primarily the Balkan countries (Albania,
+Serbia, Croatia, Bosnia and Herzegovina), which suffered devastating
+conflicts, regime changes, and civil wars during the fall of communism
