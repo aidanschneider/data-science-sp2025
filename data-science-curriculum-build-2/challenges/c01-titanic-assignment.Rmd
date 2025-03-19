@@ -90,29 +90,28 @@ df_titanic %>% summarize(total = sum(n))
 ## TASK: Visualize counts against `Class` and `Sex`
 
 
-df_titanic %>%
-  filter(Survived == "Yes") %>% 
-  ggplot(aes(x = Class, y = n, fill = Sex)) +
+df_q3 <- df_titanic %>%
+  group_by(Sex, Survived, Class) %>% 
+  filter(Class != "Crew", Survived != "No")
+df_q3
+
+ggplot(df_q3, aes(x = Class, y = n, fill = Sex)) +
   geom_col()
 
-```
-```{r}
 
-df_titanic %>%
-  group_by(Class, Sex)
-  
-  filter(Survived == "Yes", Class != "Crew", Age != "Child") %>% 
-  group_by(Class, Sex)
-  ggplot(aes(x = Sex, y = n)) +
-  geom_col() 
-  
-  
+
+
 ```
 
 
 **Observations**:
 
 - Write your observations here
+
+- The most survivors from the Titanic came from First class, while the least number of survivors came from 2nd
+- More females survived than males in all three classes
+- Women and children were required to board lifeboats first, possibly leading to less male survivors 
+
 
 
 
@@ -142,10 +141,22 @@ df_prop
 
 ```{r q4-task}
 
-df_titanic %>%
-  filter(Survived == "Yes") %>% 
-  ggplot(aes(x = Class, y = Prop, fill = Sex)) +
+
+df_q4 <- df_titanic %>%
+  group_by(Sex, Survived, Class) %>% 
+  filter(Class != "Crew", Survived != "No") %>% 
+  mutate(
+    Total = sum(n),
+    Prop = n / Total
+  ) %>%
+  ungroup()
+  
+df_q4
+
+ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
   geom_col()
+
+
 
 ```
 
@@ -153,20 +164,40 @@ df_titanic %>%
 
 - Write your observations here.
 - Is there anything *fishy* going on in your plot?
-  - (Your response here)
+  - All the bar plots go to 2, not properly showing the proportions we are trying to analyze
+
 
 ### __q5__ Create a plot showing the group-proportion of occupants who *did* survive, along with aesthetics for `Class`, `Sex`, *and* `Age`. Document your observations below.
 
 *Hint*: Don't forget that you can use `facet_grid` to help consider additional variables!
 
 ```{r q5-task}
+
+df_q5 <- df_titanic %>%
+  filter(Class != "Crew", Survived != "No") %>%  
+  group_by(Sex, Survived, Class) %>%  
+  mutate(
+    Total = sum(n),  
+    Prop = n / Total  
+  ) %>% 
+  ungroup()
+
+df_q5
+
+ggplot(df_q5, aes(x = Class, y = Prop, fill = Sex)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~Age)
+
 ```
 
 **Observations**:
 
 - (Write your observations here.)
 - If you saw something *fishy* in q4 above, use your new plot to explain the fishy-ness.
-  - (Your response here)
+  - I decided to filter before grouping to ensure I was only analyzing the data about survivors
+  - I used dodge in my geom_col() to show the proportions of male and female survivors side-by-side for easier readability
+  - We can now see that there were more female survivors than male survivors in all classes except 3rd, where there was relatively small difference
+  - We can see that male children had a higher chance of survival than female children
 
 # Notes
 <!-- -------------------------------------------------- -->

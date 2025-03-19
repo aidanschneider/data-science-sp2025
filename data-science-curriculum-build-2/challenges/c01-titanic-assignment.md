@@ -41,12 +41,6 @@ the groups.
 *Reading*: (Optional) [Wikipedia
 article](https://en.wikipedia.org/wiki/RMS_Titanic) on the RMS Titanic.
 
-**PLEASE READ**: This assignment is incomplete as I have been sick with
-flu and strep for the past few days. I am getting unexpected values for
-the number of people who survived from each class (please see the counts
-displayed below). I would appreciate any feedback and help I can get on
-this assignment.
-
 <!-- include-rubric -->
 
 # Grading Rubric
@@ -160,54 +154,47 @@ df_titanic %>% summarize(total = sum(n))
 ## TASK: Visualize counts against `Class` and `Sex`
 
 
-df_titanic %>%
-  filter(Survived == "Yes") %>% 
-  ggplot(aes(x = Class, fill = Sex)) +
-  geom_bar()
+df_q3 <- df_titanic %>%
+  group_by(Sex, Survived, Class) %>% 
+  filter(Class != "Crew", Survived != "No")
+df_q3
+```
+
+    ## # A tibble: 12 × 5
+    ## # Groups:   Sex, Survived, Class [6]
+    ##    Class Sex    Age   Survived     n
+    ##    <chr> <chr>  <chr> <chr>    <dbl>
+    ##  1 1st   Male   Child Yes          5
+    ##  2 2nd   Male   Child Yes         11
+    ##  3 3rd   Male   Child Yes         13
+    ##  4 1st   Female Child Yes          1
+    ##  5 2nd   Female Child Yes         13
+    ##  6 3rd   Female Child Yes         14
+    ##  7 1st   Male   Adult Yes         57
+    ##  8 2nd   Male   Adult Yes         14
+    ##  9 3rd   Male   Adult Yes         75
+    ## 10 1st   Female Adult Yes        140
+    ## 11 2nd   Female Adult Yes         80
+    ## 12 3rd   Female Adult Yes         76
+
+``` r
+ggplot(df_q3, aes(x = Class, y = n, fill = Sex)) +
+  geom_col()
 ```
 
 ![](c01-titanic-assignment_files/figure-gfm/q3-task-1.png)<!-- -->
-
-``` r
-str(df_titanic)
-```
-
-    ## tibble [32 × 5] (S3: tbl_df/tbl/data.frame)
-    ##  $ Class   : chr [1:32] "1st" "2nd" "3rd" "Crew" ...
-    ##  $ Sex     : chr [1:32] "Male" "Male" "Male" "Male" ...
-    ##  $ Age     : chr [1:32] "Child" "Child" "Child" "Child" ...
-    ##  $ Survived: chr [1:32] "No" "No" "No" "No" ...
-    ##  $ n       : num [1:32] 0 0 35 0 0 0 17 0 118 154 ...
-
-``` r
-df_titanic %>%
-  filter(Survived == "Yes") %>%
-  group_by(Class, Sex) %>%
-  summarise(SurvivorCount = n())
-```
-
-    ## `summarise()` has grouped output by 'Class'. You can override using the
-    ## `.groups` argument.
-
-    ## # A tibble: 8 × 3
-    ## # Groups:   Class [4]
-    ##   Class Sex    SurvivorCount
-    ##   <chr> <chr>          <int>
-    ## 1 1st   Female             2
-    ## 2 1st   Male               2
-    ## 3 2nd   Female             2
-    ## 4 2nd   Male               2
-    ## 5 3rd   Female             2
-    ## 6 3rd   Male               2
-    ## 7 Crew  Female             2
-    ## 8 Crew  Male               2
 
 **Observations**:
 
 - Write your observations here
 
-The number of people who survived is way off, and I am not sure what’s
-causing it.
+- The most survivors from the Titanic came from First class, while the
+  least number of survivors came from 2nd
+
+- More females survived than males in all three classes
+
+- Women and children were required to board lifeboats first, possibly
+  leading to less male survivors
 
 # Deeper Look
 
@@ -253,23 +240,105 @@ df_prop
 
 ### **q4** Replicate your visual from q3, but display `Prop` in place of `n`. Document your observations, and note any new/different observations you make in comparison with q3. Is there anything *fishy* in your plot?
 
+``` r
+df_q4 <- df_titanic %>%
+  group_by(Sex, Survived, Class) %>% 
+  filter(Class != "Crew", Survived != "No") %>% 
+  mutate(
+    Total = sum(n),
+    Prop = n / Total
+  ) %>%
+  ungroup()
+  
+df_q4
+```
+
+    ## # A tibble: 12 × 7
+    ##    Class Sex    Age   Survived     n Total    Prop
+    ##    <chr> <chr>  <chr> <chr>    <dbl> <dbl>   <dbl>
+    ##  1 1st   Male   Child Yes          5    62 0.0806 
+    ##  2 2nd   Male   Child Yes         11    25 0.44   
+    ##  3 3rd   Male   Child Yes         13    88 0.148  
+    ##  4 1st   Female Child Yes          1   141 0.00709
+    ##  5 2nd   Female Child Yes         13    93 0.140  
+    ##  6 3rd   Female Child Yes         14    90 0.156  
+    ##  7 1st   Male   Adult Yes         57    62 0.919  
+    ##  8 2nd   Male   Adult Yes         14    25 0.56   
+    ##  9 3rd   Male   Adult Yes         75    88 0.852  
+    ## 10 1st   Female Adult Yes        140   141 0.993  
+    ## 11 2nd   Female Adult Yes         80    93 0.860  
+    ## 12 3rd   Female Adult Yes         76    90 0.844
+
+``` r
+ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
+  geom_col()
+```
+
+![](c01-titanic-assignment_files/figure-gfm/q4-task-1.png)<!-- -->
+
 **Observations**:
 
 - Write your observations here.
 - Is there anything *fishy* going on in your plot?
-  - (Your response here)
+  - All the bar plots go to 2, not properly showing the proportions we
+    are trying to analyze
 
 ### **q5** Create a plot showing the group-proportion of occupants who *did* survive, along with aesthetics for `Class`, `Sex`, *and* `Age`. Document your observations below.
 
 *Hint*: Don’t forget that you can use `facet_grid` to help consider
 additional variables!
 
+``` r
+df_q5 <- df_titanic %>%
+  filter(Class != "Crew", Survived != "No") %>%  
+  group_by(Sex, Survived, Class) %>%  
+  mutate(
+    Total = sum(n),  
+    Prop = n / Total  
+  ) %>% 
+  ungroup()
+
+df_q5
+```
+
+    ## # A tibble: 12 × 7
+    ##    Class Sex    Age   Survived     n Total    Prop
+    ##    <chr> <chr>  <chr> <chr>    <dbl> <dbl>   <dbl>
+    ##  1 1st   Male   Child Yes          5    62 0.0806 
+    ##  2 2nd   Male   Child Yes         11    25 0.44   
+    ##  3 3rd   Male   Child Yes         13    88 0.148  
+    ##  4 1st   Female Child Yes          1   141 0.00709
+    ##  5 2nd   Female Child Yes         13    93 0.140  
+    ##  6 3rd   Female Child Yes         14    90 0.156  
+    ##  7 1st   Male   Adult Yes         57    62 0.919  
+    ##  8 2nd   Male   Adult Yes         14    25 0.56   
+    ##  9 3rd   Male   Adult Yes         75    88 0.852  
+    ## 10 1st   Female Adult Yes        140   141 0.993  
+    ## 11 2nd   Female Adult Yes         80    93 0.860  
+    ## 12 3rd   Female Adult Yes         76    90 0.844
+
+``` r
+ggplot(df_q5, aes(x = Class, y = Prop, fill = Sex)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~Age)
+```
+
+![](c01-titanic-assignment_files/figure-gfm/q5-task-1.png)<!-- -->
+
 **Observations**:
 
 - (Write your observations here.)
 - If you saw something *fishy* in q4 above, use your new plot to explain
   the fishy-ness.
-  - (Your response here)
+  - I decided to filter before grouping to ensure I was only analyzing
+    the data about survivors
+  - I used dodge in my geom_col() to show the proportions of male and
+    female survivors side-by-side for easier readability
+  - We can now see that there were more female survivors than male
+    survivors in all classes except 3rd, where there was relatively
+    small difference
+  - We can see that male children had a higher chance of survival than
+    female children
 
 # Notes
 
