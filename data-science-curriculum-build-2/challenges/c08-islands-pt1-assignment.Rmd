@@ -1,7 +1,7 @@
 ---
 title: "The Islands, Part 1: Design"
-author: "(Your name here)"
-date: 202X-XX-XX
+author: "Aidan Schneider"
+date: 2025-04-02
 output:
   github_document:
     toc: true
@@ -66,15 +66,15 @@ NB. When Zach counted the homes (on 2025-01-08), he found 20 unoccupied out of 5
 **Observations**:
 
 - What is the total number of homes in Helvig?
-  - (Your response here)
+  - 554 homes
 - What is the number of unoccupied homes? (*Hint*: This is not given anywhere. You will have to count them!)
-  - (Your response here)
+  - 17 unoccupied homes
 - What percent of homes are *occupied*?
-  - (Your response here)
+  - 99.96% of the homes are currently occupied
 - Are there any sources of *real* uncertainty in the percent occupied you calculated?
-  - (Your response here)
+  - The only real uncertainty in this percent should come from the number of houses occupied and unoccupied changing
 - Are there any sources of *erroneous* uncertainty in the percent occupied you calculated?
-  - (Your response here)
+  - Human error in counting the number of occupied vs unoccupied houses
 
 Zach looked at the first 25 homes in Helvig and recorded the `age` and `name` of every person in those homes. These people are provided in `helvig-seq.csv`.
 
@@ -98,14 +98,19 @@ Make sure to include in `df_q3` the counts as a column named `n`, and the preval
 ## TASK: Compute the prevalence and sort
 df_q3 <- 
   df_sample_seq %>% 
-## TODO: Complete this code
+  drop_na() %>% 
+  separate(name, into = c("first_name", "last_name"), sep = " ") %>% 
+  group_by(last_name) %>% 
+  count() %>% 
+  mutate(p = n / sum(nrow(df_sample_seq))) %>% 
+  arrange(desc(p))
 
 df_q3
 ```
 
 Use the following to check your work.
 
-```{r q3-tests}
+```{r q3-test}
 ## NOTE: No need to change this
 ## Check that data has `p` column and is in descending order
 assertthat::assert_that(
@@ -121,9 +126,9 @@ print("Very good!")
 *Observations*
 
 - What last name is most prevalent in `df_sample_seq`?
-  - (Your response here)
+  - The most prevalent last name is Sorenson (~12% of sample had this last name)
 - Is this sample representative of *all* houses in Helvig? Why or why not?
-  - (Your response here)
+  - This sample is not representative of all houses in Helvig as the dataset is comprised of the first 25 homes. Had the sample been comprised of 25 randomly selected homes, it would have been more representative of the whole (a subsample of the dataset).
 
 In the exercises, we talked about the importance of random sampling. In the previous challenge, we were able to *simulate* a random sample by running a few lines of code. But in the real world, we have to work harder to gather a random sample. We'll do this in two stages: *plan* then *collect*.
 
@@ -135,8 +140,8 @@ Complete the code below to draw a sample of size `n=25`. Replace `n_houses` with
 ## TASK: Set the parameters for this code block
 
 ## Select a random sample of houses
-# n_houses <- ??? # Total number of houses
-# n_sample <- ???  # Desired sample size
+n_houses <- 551
+n_sample <- 25
 
 set.seed(101)   # Set a seed for reproducibility
 
@@ -225,8 +230,9 @@ print("Great work!")
 *Observations*
 
 - Which sample---sequential or random---is more *representative* of all homes Helvig? Why?
-  - (Sequential or random?)
-  - (Write your 'why' here.)
+  - Random sampling allows for a more representative sample of all homes in Helvig
+  - This is because sequential sampling is vulnerable to biases: the first or last n homes in Helvig may have a prevalence of one last name, age group, gender, etc. Taking a random sample ensures that we don't accidentally select a homogenous sample, spreading out samples to ensure we select a relatively even amount of subjects from different areas of a sample. 
+
 
 ### __q6__ Find common names: Random sample
 
@@ -244,9 +250,9 @@ df_sample_random %>%
 *Observations*
 
 - Did you find any highly prevalent names using `df_sample_random` that you *didn't* find in q3 (using `df_sample_seq`)? Write them here.
-  - (Your response here)
+  - The most prevalent last name I found now that I didn't find in q3 is Collins
 - Is there any reason that people with the same last name might tend to *live near each other*?
-  - (Your response here)
+  - Last name usually indicates that the indivduals are from the same family, and thus tend to live in the same household or relatively close by. 
 
 You should have found some difference between the sequential and random samples. This is because we're only working with a *sample*---a limited number of observations from the entire population. We could go to every single house in Helvig and determine *exactly* how many people of each name there are (that's called a *census*), but the point of statistical inference is that we can make statements about a population using only a sample. What makes statistical inference powerful is that we can determine *how confident* we should be in our results, based on the size of our sample.
 
@@ -263,8 +269,13 @@ Complete the code below to write a helper function. Your function will compute t
 #  in an `estimate` column).
 name_prevalence <- function(df, last = "Collins") {
   df %>% 
-    ## TODO: Finish this code
-    mutate(term = "prevalence")
+    drop_na() %>% 
+    mutate(last_name = str_extract(name, "\\w+$")) %>% 
+    count(last_name) %>% 
+    mutate(estimate = n/sum(n),
+           term = "estimate") %>% 
+    filter(last_name == last) %>% 
+    select(term, estimate)
 }
 ```
 
@@ -326,11 +337,13 @@ df_interval_bootstrap <-
       function(split_df) {
 ## TODO: Finish this code, using the name_prevalence() helper you implemented
 ## HINT: Remember that you need to use analysis() when operating on split_df
+         name_prevalence(analysis(split_df), last = "Collins")
+           
       }
     )
   ) %>% 
   ## NOTE: No need to edit this line; this uses your bootstrap sample to compute
-  # a confidence `int`erval using the percentile method
+  # a confidence `interval using the percentile method
   int_pctl(., estimate)
 
 df_interval_bootstrap 
@@ -339,10 +352,9 @@ df_interval_bootstrap
 **Observations**:
 
 - What is highest possible prevalence for your chosen name, based on the confidence interval you constructed?
-  - (Your response here)
+  - The highest prevalence is 18.9%
 - Note that we used the *random* sample with the bootstrap procedure in this task. Could we use the bootstrap to make a confidence interval using the sequential sample (`df_sample_seq`) that would be representative of all of Helvig? Why or why not?
-  - (Yes or no.)
-  - (Write your 'why' here.)
+  - We couldn't make a CI representative of Helvig as the data from which the CI is based is not representative of Helvig.
 
 ### __q9__ Discover possible measurements
 
@@ -350,9 +362,9 @@ Click on a single islander (you can do this from one of the houses), and take a 
 
 *Hint*: The videos from the [Visitor Center](https://islands.smp.uq.edu.au/visitors.php) will be especially helpful for getting some ideas.
 
-- (Possible measurement #1)
-- (Possible measurement #2)
-- (Possible measurement #3)
+- Number of relations: each islander has a list of parents, significant others, and children
+- Wealth and occupation: each islander has their occupation and total wealth noted
+- Age: each islander has their age noted
 
 ### __q10__ Planning a study (TEAMWORK)
 
@@ -361,35 +373,43 @@ Challenge 10 will be a team assignment where you plan and execute a statistical 
 #### Population
 
 - (What population are you going to study?)
-  - All of the Islanders? Only the residents of Helvig? Participants meeting certain criteria (in which case, you need to list *covariates*)?
+  - We are going to take a random sample of the population of Akkeshi.
 
 #### Quantity of interest
 
-- (Write your quantity of interest here)
+- Our QOI is reaction time. 
 
 #### Covariates
 
-- (Write any relevant covariates here)
-- (There's probably more than one!)
+- Amount of substance ingested versus change in reaction time
+- size/age/weight of subject versus reaction to substance dosage, quantified by reaction time 
 
 #### Observation or experiment?
 
 The Islands allows you to ask islanders to complete tasks. If you just take measurements on your participants, then it's an *observational study*. But if you also introduce something that's meant to change the outcome of a measurement (e.g., drinking coffee before taking a test), that's called an *experimental study*. You need to decide whether your study is observational or experimental.
 
-- (Observation or experiment?)
+- This would be an experimental study as we are providing a substance (alcohol/cannabis) to the individuals and monitoring their change in reaction time. This is not a passive study as we are actively introducing an independent variable.  
 
 #### Question / Hypothesis
 
-- (Write your question / hypothesis here)
-  - This could be an observational question, like "How are X and Y related in the population?"
-  - This could be an experimental question, like "What effect does X have on Y in the population?"
+- Does drinking alcohol (or potentially cannabis) influence an individual's reaction time?
 
 #### Sampling plan
 
 - (What steps will you take to collect the data?)
-  - Be specific. For instance, if you're going to collect a random sample, how will you enumerate all of the things to be sampled?
-  - Write a protocol. Document step-by-step instructions that your team will follow. That way, you can feasibly split up data collection among the whole team, while making sure each team member doesn't make ad hoc decisions that introduce bias into your results.
+
+  - We will first generate a random sample of house numbers based on number of houses existant in Akkeshi and number of houses we want to survey
+  - We will then go to each of these houses and select individuals above the age of 21 for ethical considerations
+  - Test each individuals reaction time before being provided substance
+  - provide substance (alcohol or cannabis)
+  - Test each individuals reaction time after being provided substance
+  - Record data
+  
 - (How will you ensure the data is representative of your chosen population?)
+
+- Random sampling to ensure that our sample is a subsample of the total (ensures we are drawing equally from the total).
+
 - (For experiments only: How will you ensure any effects you observe are due to the treatment, and not due to other factors?)
 - (How will you choose your sample size?)
-  - This should be a mix of how confident you want to be in your results, and what is actually *feasible* for your research team.
+
+  - We will conduct all experiments in one sitting to ensure no other factors influence our subjects.
