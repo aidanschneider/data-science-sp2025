@@ -156,26 +156,33 @@ df_titanic %>% summarize(total = sum(n))
 
 df_q3 <- df_titanic %>%
   group_by(Sex, Survived, Class) %>% 
-  filter(Class != "Crew", Survived != "No")
+  filter(
+    # Class != "Crew", 
+    Survived != "No"
+  )
 df_q3
 ```
 
-    ## # A tibble: 12 × 5
-    ## # Groups:   Sex, Survived, Class [6]
+    ## # A tibble: 16 × 5
+    ## # Groups:   Sex, Survived, Class [8]
     ##    Class Sex    Age   Survived     n
     ##    <chr> <chr>  <chr> <chr>    <dbl>
     ##  1 1st   Male   Child Yes          5
     ##  2 2nd   Male   Child Yes         11
     ##  3 3rd   Male   Child Yes         13
-    ##  4 1st   Female Child Yes          1
-    ##  5 2nd   Female Child Yes         13
-    ##  6 3rd   Female Child Yes         14
-    ##  7 1st   Male   Adult Yes         57
-    ##  8 2nd   Male   Adult Yes         14
-    ##  9 3rd   Male   Adult Yes         75
-    ## 10 1st   Female Adult Yes        140
-    ## 11 2nd   Female Adult Yes         80
-    ## 12 3rd   Female Adult Yes         76
+    ##  4 Crew  Male   Child Yes          0
+    ##  5 1st   Female Child Yes          1
+    ##  6 2nd   Female Child Yes         13
+    ##  7 3rd   Female Child Yes         14
+    ##  8 Crew  Female Child Yes          0
+    ##  9 1st   Male   Adult Yes         57
+    ## 10 2nd   Male   Adult Yes         14
+    ## 11 3rd   Male   Adult Yes         75
+    ## 12 Crew  Male   Adult Yes        192
+    ## 13 1st   Female Adult Yes        140
+    ## 14 2nd   Female Adult Yes         80
+    ## 15 3rd   Female Adult Yes         76
+    ## 16 Crew  Female Adult Yes         20
 
 ``` r
 ggplot(df_q3, aes(x = Class, y = n, fill = Sex)) +
@@ -241,38 +248,24 @@ df_prop
 ### **q4** Replicate your visual from q3, but display `Prop` in place of `n`. Document your observations, and note any new/different observations you make in comparison with q3. Is there anything *fishy* in your plot?
 
 ``` r
-df_q4 <- df_titanic %>%
-  group_by(Sex, Survived, Class) %>% 
-  filter(Class != "Crew", Survived != "No") %>% 
-  mutate(
-    Total = sum(n),
-    Prop = n / Total
-  ) %>%
-  ungroup()
-  
-df_q4
+# df_prop %>%
+#   group_by(Sex, Survived, Class) %>% 
+#   filter(Class != "Crew", Survived != "No") %>% 
+#   mutate(
+#     Total = sum(n),
+#     Prop = n / Total
+#   ) %>%
+#   ungroup()
+
+
+df_prop %>% 
+  filter(Survived == "Yes") %>% 
+  ggplot(aes(x = Class, y = Prop, fill = Sex)) +
+  geom_col(color = "black")
 ```
 
-    ## # A tibble: 12 × 7
-    ##    Class Sex    Age   Survived     n Total    Prop
-    ##    <chr> <chr>  <chr> <chr>    <dbl> <dbl>   <dbl>
-    ##  1 1st   Male   Child Yes          5    62 0.0806 
-    ##  2 2nd   Male   Child Yes         11    25 0.44   
-    ##  3 3rd   Male   Child Yes         13    88 0.148  
-    ##  4 1st   Female Child Yes          1   141 0.00709
-    ##  5 2nd   Female Child Yes         13    93 0.140  
-    ##  6 3rd   Female Child Yes         14    90 0.156  
-    ##  7 1st   Male   Adult Yes         57    62 0.919  
-    ##  8 2nd   Male   Adult Yes         14    25 0.56   
-    ##  9 3rd   Male   Adult Yes         75    88 0.852  
-    ## 10 1st   Female Adult Yes        140   141 0.993  
-    ## 11 2nd   Female Adult Yes         80    93 0.860  
-    ## 12 3rd   Female Adult Yes         76    90 0.844
-
-``` r
-ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
-  geom_col()
-```
+    ## Warning: Removed 2 rows containing missing values or values outside the scale range
+    ## (`geom_col()`).
 
 ![](c01-titanic-assignment_files/figure-gfm/q4-task-1.png)<!-- -->
 
@@ -280,8 +273,12 @@ ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
 
 - Write your observations here.
 - Is there anything *fishy* going on in your plot?
-  - All the bar plots go to 2, not properly showing the proportions we
-    are trying to analyze
+  - The bar plots showing proportion of survivors extend beyond 100%
+  - After adding color outlines to the stacked bar plots, I see there
+    are 4 bar charts for each stacked bar chart
+  - This is because all passengers are broken up into Adult and Children
+    categories, and both of them are being considered in this plot,
+    causing the proportions to go beyond 100%
 
 ### **q5** Create a plot showing the group-proportion of occupants who *did* survive, along with aesthetics for `Class`, `Sex`, *and* `Age`. Document your observations below.
 

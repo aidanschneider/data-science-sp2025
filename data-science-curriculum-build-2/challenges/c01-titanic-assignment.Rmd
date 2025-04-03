@@ -92,7 +92,10 @@ df_titanic %>% summarize(total = sum(n))
 
 df_q3 <- df_titanic %>%
   group_by(Sex, Survived, Class) %>% 
-  filter(Class != "Crew", Survived != "No")
+  filter(
+    # Class != "Crew", 
+    Survived != "No"
+  )
 df_q3
 
 ggplot(df_q3, aes(x = Class, y = n, fill = Sex)) +
@@ -142,19 +145,20 @@ df_prop
 ```{r q4-task}
 
 
-df_q4 <- df_titanic %>%
-  group_by(Sex, Survived, Class) %>% 
-  filter(Class != "Crew", Survived != "No") %>% 
-  mutate(
-    Total = sum(n),
-    Prop = n / Total
-  ) %>%
-  ungroup()
-  
-df_q4
+# df_prop %>%
+#   group_by(Sex, Survived, Class) %>% 
+#   filter(Class != "Crew", Survived != "No") %>% 
+#   mutate(
+#     Total = sum(n),
+#     Prop = n / Total
+#   ) %>%
+#   ungroup()
 
-ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
-  geom_col()
+
+df_prop %>% 
+  filter(Survived == "Yes") %>% 
+  ggplot(aes(x = Class, y = Prop, fill = Sex)) +
+  geom_col(color = "black")
 
 
 
@@ -164,7 +168,9 @@ ggplot(df_q4, aes(x = Class, y = Prop, fill = Sex)) +
 
 - Write your observations here.
 - Is there anything *fishy* going on in your plot?
-  - All the bar plots go to 2, not properly showing the proportions we are trying to analyze
+  - The bar plots showing proportion of survivors extend beyond 100%
+  - After adding color outlines to the stacked bar plots, I see there are 4 bar charts for each stacked bar chart
+  - This is because all passengers are broken up into Adult and Children categories, and both of them are being considered in this plot,     causing the proportions to go beyond 100%
 
 
 ### __q5__ Create a plot showing the group-proportion of occupants who *did* survive, along with aesthetics for `Class`, `Sex`, *and* `Age`. Document your observations below.
