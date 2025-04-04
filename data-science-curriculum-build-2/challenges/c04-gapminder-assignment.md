@@ -231,14 +231,13 @@ df_q2 %>%
 
 **Observations**:
 
-- Write your observations here (REVISION)
+- Write your observations here (REVISION PT2)
 
 I chose to make a box plot to compare the range of GDP Per Capita of
 each continent. The above plot shows that the GDP Per Capita varies
-significantly by continent, with Asia and Africa having the lowest GDP
-Per Capita’s on average and Oceania and Europe having the highest GDP
-Per Capita’s on average. There are also some outlier countries for the
-Americas boxplot and the Asia boxplot.
+significantly by continent, with Asia, Africa, and Europe having the
+greatest ranges of GDP Per Capita and the America’s and Oceania having
+the smallest ranges of GDP Per Capita.
 
 **Difficulties & Approaches**:
 
@@ -248,7 +247,7 @@ The greatest challenge was deciding what plot would best represent this
 data. I initially chose a bar plot, but found that the bar plot summed
 the GDP per Capita’s of each country in each continent by stacking,
 which wasn’t a good comparison method for making our analysis. I then
-opted to use a boxplot, which more effectively showed the spread of GDP
+opted to use a boxplot, which more effectively showed the range of GDP
 per Capita’s of each of the countries in each of the continents.
 
 ### **q3** You should have found *at least* three outliers in q2 (but possibly many more!). Identify those outliers (figure out which countries they are).
