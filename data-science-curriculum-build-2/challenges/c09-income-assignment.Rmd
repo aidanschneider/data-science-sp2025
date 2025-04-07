@@ -1,7 +1,7 @@
 ---
 title: "US Income"
-author: "(Your name here)"
-date: 202X-XX-XX
+author: "Aidan Schneider"
+date: 2025-04-06
 output:
   github_document:
     toc: true
@@ -50,7 +50,8 @@ library(tidyverse)
 
 ```{r q1-task}
 ## TODO: Give the filename for your copy of Table B01003
-filename_pop <- NA_character_
+
+filename_pop <- "./data/productDownload_2025-03-12T114212/ACSDT5Y2018.B01003-Data.csv"
 
 ## NOTE: No need to edit
 df_pop <-
@@ -80,7 +81,7 @@ This means that for cases listed as `*****` the US Census Bureau recommends trea
 
 ```{r q2-task}
 ## TODO: Give the filename for your copy of Table S1903
-filename_income <- NA_character_
+filename_income <- "./data/productDownload_2025-04-03T170247/ACSST5Y2018.S1903-Data.csv"
 
 ## NOTE: No need to edit
 df_income <-
@@ -121,7 +122,18 @@ df_q3 <-
   ) %>%
   mutate(across(contains("median"), as.numeric)) %>%
 ## TODO: Pivot the data, rename the columns
-  glimpse()
+  pivot_longer(
+    names_to = c(".value", "category"),
+    names_pattern = "(Estimate|Margin of Error).*(\\d-person families)",
+    cols= -c(Geography, "Geographic Area Name")
+  ) %>% 
+  rename(
+    geographic_area_name = "Geographic Area Name",
+    income_estimate = Estimate,
+    income_moe = "Margin of Error"
+  )
+
+df_q3
 ```
 
 Use the following tests to check your work:
@@ -151,6 +163,14 @@ $$\text{MOE} = 1.645 \times \text{SE}.$$
 ### __q4__ Convert the margin of error to standard error. Additionally, compute a 99% confidence interval on income, and normalize the standard error to `income_CV = income_SE / income_estimate`. Provide these columns with the names `income_SE, income_lo, income_hi, income_CV`.
 
 ```{r q4-task}
+z_c = qnorm(1-(1-0.99)/2)
+df_q4 <- df_q3 %>% 
+  mutate(
+    income_SE = income_moe/1.645,
+    income_lo = income_estimate - z_c * income_SE,
+    income_hi = income_estimate + z_c * income_SE,
+    income_CV = income_SE / income_estimate
+    )
 
 df_q4
 ```
@@ -208,6 +228,8 @@ One last wrangling step: We need to join the two datasets so we can compare popu
 ```{r q5-task}
 ## TODO: Join df_q4 and df_pop by the appropriate column
 
+df_data <- left_join(df_q4, df_pop %>% select(Geography, population_estimate), by = "Geography")
+  
 df_data
 ```
 
@@ -246,13 +268,15 @@ df_data %>%
 **Observations**:
 
 - Document your observations here.
-  - (Your response here)
-  - (Your response here)
-  - ...
+  - The categories with greatest confidence intervals appear to be 5-person and 6-person family incomes
+  - The categories with the smallest confidence intervals appear to be the 2-person and 3-person family incomes
+  
+  
 - Can you confidently distinguish between household incomes in Suffolk county? Why or why not?
-  - (Your response here)
+  - It is hard to distinguish between household incomes in Suffolk county as they are quite close together on the plot. 
+  
 - Which counties have the widest confidence intervals?
-  - (Your response here)
+  - The counties with the widest confidence intervals are Dukes and Nantucket
 
 In the next task you'll investigate the relationship between population and uncertainty.
 
@@ -261,14 +285,31 @@ In the next task you'll investigate the relationship between population and unce
 *Hint*: Remember that standard error is a function of *both* variability (e.g. variance) and sample size.
 
 ```{r q7-task}
+df_data %>% 
+  ggplot(aes(x = population_estimate, y = income_SE, color = category)) +
+  geom_point() +
+  scale_x_log10(labels = scales::comma) +
+  scale_y_log10(labels = scales::comma) +
+  geom_smooth(method = "lm", color = "blue") +
+  theme(legend.position = "None") +
+  labs(
+    title = "Comparison of Population versus Standard Error of Income"
+  )
+
 ```
 
 **Observations**:
 
 - What *overall* trend do you see between `SE` and population? Why might this trend exist?
-  - (Your response here)
+  - I notice that the greater the population, the lower the SE, and the smaller the population,
+    the higher the SE
+  - This trend may exist because of the inverse relationship between standard error and sample 
+  size. Since populations are effectively whole samples, the greater a population the more 
+  accurate our data about it becomes.
+  
 - What does this *overall* trend tell you about the relative ease of studying small vs large counties?
-  - (Your response here)
+  - Studying smaller counties is more difficult to study as there is less data about them and thus 
+    less accurate conclusions can be drawn. 
 
 # Going Further
 <!-- ----------------------------------------------------------------------- -->
@@ -277,13 +318,48 @@ Now it's your turn! You have income data for every county in the United States: 
 
 ### __q8__ Pose your own question about the data. Create a visualization (or table) here, and document your observations.
 
+
+Question: How does the population size of a county affect the difference in estimated income between family sizes?
+
 ```{r q8-task}
 ## TODO: Pose and answer your own question about the data
+
+df_q8 <- df_data %>%
+  separate(geographic_area_name, into = c("county", "state"), sep = ",") %>% 
+  mutate(state = trimws(state)) %>%
+  filter(state == "California") 
+
+df_summary <- df_q8 %>% 
+  summarise(quantile(population_estimate)) 
+
+df_summary
+
+df_q8 <- df_q8 %>% 
+  mutate(population_size = case_when(
+    population_estimate > 732212 ~ "big",
+    population_estimate > 45235 & population_estimate <= 732212 ~ "medium",
+    population_estimate > 0 & population_estimate <= 45235 ~ "small"
+  ))
+
+df_q8 %>% 
+  ggplot(aes(x = category, y = income_estimate, fill = category)) +
+  geom_boxplot() +  # Box plot for each family category
+  facet_wrap(~population_size) +  # Create separate subplots for each population size
+  labs(
+    title = "Income Estimates by Family Size and County Population Size",
+    x = "Family Size",
+    y = "Income Estimate"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+  
+
 ```
 
 **Observations**:
 
-- Document your observations here
+- Counties with larger populations seem to have a higher mean income across all family sizes than other county population sizes
+- Smaller counties seem to have a smaller range of incomes than all other county population sizes
+- All the counties seem to share the trait that 4-person family households have slightly higher mean income
 
 Ideas:
 
