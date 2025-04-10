@@ -126,8 +126,8 @@ you still need to count, because your numbers *will* be different!
 - What is the number of unoccupied homes? (*Hint*: This is not given
   anywhere. You will have to count them!)
   - 17 unoccupied homes
-- What percent of homes are *occupied*?
-  - 99.96% of the homes are currently occupied
+- What percent of homes are *occupied*? (REVISION)
+  - 96.93% of the homes are occupied
 - Are there any sources of *real* uncertainty in the percent occupied
   you calculated?
   - The only real uncertainty in this percent should come from the
