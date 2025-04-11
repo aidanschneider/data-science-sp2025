@@ -164,9 +164,19 @@ To check your results, this is Table `B01003`.
 *Hint*: You will need to use the `skip` keyword when loading these data!
 
 ``` r
-## TASK: Load the census bureau data with the following tibble name.
-df_pop <- read.csv('/Users/aidanschneider_1/Documents/Olin/2025_Spring/Data_Science/data-science-sp2025/data-science-curriculum-build-2/challenges/data/productDownload_2025-03-12T114212/ACSDT5Y2018.B01003-Data.csv', skip = 1)
+## TASK: Load the census bureau data with the following tibble name. (REVISION)
+df_pop <- read_csv('/Users/aidanschneider_1/Documents/Olin/2025_Spring/Data_Science/data-science-sp2025/data-science-curriculum-build-2/challenges/data/productDownload_2025-03-12T114212/ACSDT5Y2018.B01003-Data.csv', skip = 1)
 ```
+
+    ## New names:
+    ## Rows: 3220 Columns: 5
+    ## ── Column specification
+    ## ──────────────────────────────────────────────────────── Delimiter: "," chr
+    ## (3): Geography, Geographic Area Name, Margin of Error!!Total dbl (1):
+    ## Estimate!!Total lgl (1): ...5
+    ## ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+    ## Specify the column types or set `show_col_types = FALSE` to quiet this message.
+    ## • `` -> `...5`
 
 *Note*: You can find information on 1-year, 3-year, and 5-year estimates
 [here](https://www.census.gov/programs-surveys/acs/guidance/estimates.html).
@@ -242,11 +252,11 @@ df_pop %>% glimpse
 
     ## Rows: 3,220
     ## Columns: 5
-    ## $ Geography              <chr> "0500000US01001", "0500000US01003", "0500000US0…
-    ## $ Geographic.Area.Name   <chr> "Autauga County, Alabama", "Baldwin County, Ala…
-    ## $ Estimate..Total        <int> 55200, 208107, 25782, 22527, 57645, 10352, 2002…
-    ## $ Margin.of.Error..Total <chr> "*****", "*****", "*****", "*****", "*****", "*…
-    ## $ X                      <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+    ## $ Geography                <chr> "0500000US01001", "0500000US01003", "0500000U…
+    ## $ `Geographic Area Name`   <chr> "Autauga County, Alabama", "Baldwin County, A…
+    ## $ `Estimate!!Total`        <dbl> 55200, 208107, 25782, 22527, 57645, 10352, 20…
+    ## $ `Margin of Error!!Total` <chr> "*****", "*****", "*****", "*****", "*****", …
+    ## $ ...5                     <lgl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…
 
 ``` r
 df_covid %>% glimpse
@@ -271,7 +281,8 @@ the NYT data `df_covid` already contains the `fips`.
 ``` r
 ## TASK: Create a `fips` column by extracting the county code
 df_q3 <- df_pop %>% 
-  mutate(fips = substr(Geography, nchar(Geography)-4, nchar(Geography)))
+  mutate(fips = substr(Geography, nchar(Geography)-4, nchar(Geography))) %>% 
+  rename(Geographic.Area.Name = `Geographic Area Name`)
 ```
 
 Use the following test to check your answer.
@@ -298,7 +309,7 @@ print("Very good!")
 
 ``` r
 ## TASK: Join df_covid and df_q3 by fips.
-df_q4 <- merge(df_covid, df_q3, by = "fips", all.x = TRUE)
+df_q4 <- merge(df_covid, df_q3, by = "fips", all.x = TRUE) 
 ```
 
 Use the following test to check your answer.
@@ -354,7 +365,7 @@ df_data <-
     fips,
     cases,
     deaths,
-    population = `Estimate..Total` #Note: Changed "Estimate!!Total" to "Estimate..Total" to reflect actual column name
+    population = `Estimate!!Total` #Note: Changed "Estimate!!Total" to "Estimate..Total" to reflect actual column name
   )
 ```
 
@@ -495,23 +506,27 @@ include in your summaries,* and justify why!
 ``` r
 ## TASK: Compute mean and sd for cases_per100k and deaths_per100k
 
-df_normalized %>% 
+
+df_q6 <- df_normalized %>%
+  filter(between(date, as.Date('2020-01-01'), as.Date('2020-12-31'))) %>% 
   summarise(mean_casesper100k = mean(cases_per100k, na.rm = TRUE), 
             mean_deathsper100k = mean(deaths_per100k, na.rm = TRUE), 
             std_casesper100k = sd(cases_per100k, na.rm = TRUE), 
             std_deathsper100k = sd(deaths_per100k, na.rm = TRUE)
             )
+
+df_q6
 ```
 
     ##   mean_casesper100k mean_deathsper100k std_casesper100k std_deathsper100k
-    ## 1          9974.675           174.3095         8448.659          158.9641
+    ## 1          1803.185           37.05964         2295.454          56.32072
 
 - Which rows did you pick?
-  - I only took the mean and standard deviation of the rows that did not
-    contain NA values
+  - I only took the mean and standard deviation of the rows from the
+    year 2020
 - Why?
-  - If I were to take the mean or standard deviation of a column
-    including the NA rows I would get NA as a result
+  - COVID19 was a more severe pandemic during 2020 due to unfamiliarity
+    with the virus and lack of vaccines
 
 ### **q7** Find and compare the top 10
 
@@ -524,30 +539,83 @@ you found in q6. Note any observations.
 ## TASK: Find the top 10 max cases_per100k counties; report populations as well
 
 top10_cases <- df_normalized %>% 
+  filter(between(date, as.Date('2020-01-01'), as.Date('2020-12-31'))) %>% 
   arrange(desc(cases_per100k)) %>% 
   slice_head(n = 10)
 
+top10_cases
+```
 
+    ##          date  county    state  fips cases deaths population cases_per100k
+    ## 1  2020-12-31 Crowley Colorado 08025  1647     12       5630      29254.00
+    ## 2  2020-12-30 Crowley Colorado 08025  1640     12       5630      29129.66
+    ## 3  2020-12-29 Crowley Colorado 08025  1638     12       5630      29094.14
+    ## 4  2020-12-28 Crowley Colorado 08025  1635     12       5630      29040.85
+    ## 5  2020-12-27 Crowley Colorado 08025  1632     12       5630      28987.57
+    ## 6  2020-12-26 Crowley Colorado 08025  1630     12       5630      28952.04
+    ## 7  2020-12-25 Crowley Colorado 08025  1625     12       5630      28863.23
+    ## 8  2020-12-24 Crowley Colorado 08025  1604     12       5630      28490.23
+    ## 9  2020-12-23 Crowley Colorado 08025  1585     12       5630      28152.75
+    ## 10 2020-12-21 Crowley Colorado 08025  1578     12       5630      28028.42
+    ##    deaths_per100k
+    ## 1        213.1439
+    ## 2        213.1439
+    ## 3        213.1439
+    ## 4        213.1439
+    ## 5        213.1439
+    ## 6        213.1439
+    ## 7        213.1439
+    ## 8        213.1439
+    ## 9        213.1439
+    ## 10       213.1439
 
+``` r
 ## TASK: Find the top 10 deaths_per100k counties; report populations as well
 
 top10_deaths <- df_normalized %>% 
+  filter(between(date, as.Date('2020-01-01'), as.Date('2020-12-31'))) %>% 
   arrange(desc(deaths_per100k)) %>% 
   slice_head(n = 10)
+
+top10_deaths
 ```
+
+    ##          date county  state  fips cases deaths population cases_per100k
+    ## 1  2020-12-19   Gove Kansas 20063   325     20       2619      12409.32
+    ## 2  2020-12-09   Gove Kansas 20063   313     20       2619      11951.13
+    ## 3  2020-12-21   Gove Kansas 20063   326     20       2619      12447.50
+    ## 4  2020-11-30   Gove Kansas 20063   301     20       2619      11492.94
+    ## 5  2020-12-31   Gove Kansas 20063   332     20       2619      12676.59
+    ## 6  2020-12-26   Gove Kansas 20063   329     20       2619      12562.05
+    ## 7  2020-12-29   Gove Kansas 20063   329     20       2619      12562.05
+    ## 8  2020-11-28   Gove Kansas 20063   297     20       2619      11340.21
+    ## 9  2020-12-06   Gove Kansas 20063   309     20       2619      11798.40
+    ## 10 2020-12-15   Gove Kansas 20063   315     20       2619      12027.49
+    ##    deaths_per100k
+    ## 1        763.6502
+    ## 2        763.6502
+    ## 3        763.6502
+    ## 4        763.6502
+    ## 5        763.6502
+    ## 6        763.6502
+    ## 7        763.6502
+    ## 8        763.6502
+    ## 9        763.6502
+    ## 10       763.6502
 
 **Observations**:
 
-- The counties with the highest case rate and death rate are both
-  located in Texas (Loving and McMullen)
-- Both of these counties have relatively small populations (Loving = 102
-  lowest in the US, McMullen = 662)
+- The county with the highest case rate during 2020 was Crowley, CO,
+  while the county with the highest death rate in 2020 was Gove, KS.
+- Both of these counties have relatively small populations (Cowley =
+  5630, Gove = 2619)
   - this may be why the cases and deaths per 100k people are the
     highest, as only a few cases and deaths creates a larger ratio in
     counties with such small populations than in counties with larger
     populations
 - When did these “largest values” occur?
-  - The largest values occured mostly around March-May of 2022
+  - The largest case rate values occured around December of 2020, while
+    the largest death rates occured around November/December of 2020
 
 ## Self-directed EDA
 
@@ -567,47 +635,38 @@ top10_deaths <- df_normalized %>%
 - Fix the *geographic exceptions* noted below to study New York City.
 - Your own idea!
 
-QUESTION: How did the average amount of cases change by state throughout
-the course of COVID?
+QUESTION:
 
 ``` r
-df_eda <- df_normalized %>% 
-  mutate(
-    year = year(date),
-    month = month(date),
-  ) %>% 
-  group_by(year, month, state) %>% 
+df_eda <- df_normalized %>%
+  mutate(month_name = month(date, label = TRUE, abbr = TRUE)) %>%
+  group_by(month_name) %>%
   summarise(
-    avg_casesper100k = mean(cases_per100k, na.rm = TRUE),
+    avg_cases_per100k = mean(cases_per100k, na.rm = TRUE),
     .groups = "drop"
   )
 
-ggplot(df_eda, aes(x = as.Date(paste(year, month, "01", sep = "-")), y = avg_casesper100k, color = state)) +
-  geom_line(aes(color = state), size = 1, alpha = 0.4) + # Color each state's line
-  theme(legend.position="none") +
+df_eda %>% 
+  ggplot(aes(x = month_name, y = avg_cases_per100k)) +
+  geom_col(fill = "darkblue") +
   labs(
-    title = "Cases Per 100k people by State Over Time",
-    x = 'Date',
-    y = 'Cases per 100k people'
-    )
+    title = "Average COVID-19 Cases per 100k by Calendar Month",
+    x = "Month",
+    y = "Avg Cases per 100k"
+  )
 ```
-
-    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-    ## ℹ Please use `linewidth` instead.
-    ## This warning is displayed once every 8 hours.
-    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-    ## generated.
-
-    ## Warning: Removed 92 rows containing missing values or values outside the scale range
-    ## (`geom_line()`).
 
 ![](c06-covid19-assignment_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
-Here we can observe that the cases per 100k people increased over the
-course of COVID, with periods of plateuing. These plateus can be
-attributed to vaccines being developed for different strains or
-tightening of quarantine restricitions, and the sharp increases can be
-attributed to new strains or loosening of quarantine restrictions.
+Here we can observe that late-winter and early-spring months (Jan-Mar)
+experience a higher amount of COVID19 cases on average than every other
+month, while almost exclusively summer months (Jun-Aug) experience the
+least amount of cases per 100k on average. More specifically February
+experiences the most amount of infections per 100k on average and June
+experiences the least amount of infections per 100k on average. This may
+be due to colder winter temperatures which force people indoors, causing
+closer contact (and thus higher rates of infections) than there would be
+in warmer summer months.
 
 ### Aside: Some visualization tricks
 
