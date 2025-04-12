@@ -181,8 +181,9 @@ is Gram positive or negative.
 
 ``` r
 df_antibiotics %>%
-  ggplot(aes(x = penicillin, y = streptomycin, size = neomycin, label = bacteria)) +
+  ggplot(aes(x = penicillin, y = streptomycin, size = neomycin, label = bacteria, color = gram)) +
   geom_point() +
+  scale_color_manual(values = c("#FC4E07", "#52854C")) +
   geom_text_repel(size = 3) +
   scale_x_log10() +
   scale_y_log10() +
@@ -205,10 +206,13 @@ your other visuals.
 df_q12 <- df_antibiotics %>% 
   pivot_longer(cols = c(penicillin, streptomycin, neomycin),
                names_to = "antibiotic",
-               values_to = "mic")
+               values_to = "mic") %>% 
+  mutate(bacteria = fct_reorder(bacteria, mic))
+
 
 df_q12 %>% 
-  ggplot(aes(fill = antibiotic, y= mic, x=bacteria)) +
+  ggplot(aes(fill = antibiotic, y= mic, x=bacteria, alpha = gram)) +
+  scale_alpha_manual(values = c("positive" = 1, "negative" = 0.7)) +
   scale_y_log10() +
   geom_bar(position="dodge", stat="identity", width = 0.8) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -227,7 +231,11 @@ Note that your visual must be *qualitatively different* from *all* of
 your other visuals.
 
 ``` r
-df_antibiotics %>% 
+df_13 <- df_antibiotics %>% 
+  mutate(bacteria = fct_reorder(bacteria, penicillin))
+  
+
+df_13 %>% 
   ggplot(aes(x= bacteria, y = penicillin)) +
   geom_point() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -256,8 +264,7 @@ df_long <- df_antibiotics %>%
 
 df_long %>% 
   ggplot(aes(x = antibiotic, y = mic, color = antibiotic)) + 
-  geom_boxplot() + 
-  facet_wrap(~antibiotic) + 
+  geom_boxplot() +
   scale_y_log10() +
   theme(legend.position = "none") + 
   labs(x = "Antibiotic", y = "MIC Values") +
@@ -276,12 +283,26 @@ Note that your visual must be *qualitatively different* from *all* of
 your other visuals.
 
 ``` r
-df_antibiotics %>%
-  ggplot(aes(fill = bacteria, x = gram)) + 
-  geom_bar(position = "stack") +
-  geom_text(stat = "count", aes(label = bacteria), position = position_stack(vjust = 0.5), color = "white") +
-  labs(y = "Count", x = "Gram Type") +
-  ggtitle("Comparing the Gram Types of Different bacteria")
+df_q15 <- df_antibiotics %>% 
+  pivot_longer(
+    cols = c(penicillin, streptomycin, neomycin), # Columns to pivot
+    names_to = "antibiotic",
+    values_to = "mic" 
+  )
+
+df_q15 %>% 
+  ggplot(aes(x = antibiotic, y = bacteria)) +
+  geom_tile(aes(fill = mic), color = "white") +
+  scale_fill_gradient(
+    trans = 'log10',                             
+    low = "blue", high = "red"                   
+  ) +
+  labs(
+    title = "Heatmap of MIC Values Across Antibiotics",
+    x = "Antibiotic",
+    y = "Bacteria",
+    fill = "MIC Value"
+  )
 ```
 
 ![](c05-antibiotics-assignment_files/figure-gfm/q1.5-1.png)<!-- -->
@@ -306,13 +327,15 @@ opportunity to think about why this is.**
 > bacteria of different genera and Gram stain?
 
 *Observations* - What is your response to the question above? - The most
-effective antibiotic appears to be neomycin - Which of your visuals
-above (1 through 5) is **most effective** at helping to answer this
-question? - The most effective visual to answer this question was Visual
-2. - Why? - I was able to analyze the effectiveness of each of the
-antibiotics by their position along the x and y axis for streptomycin
-and penicilin - for the third antibiotic i am able to determine the
-effectiveness based on the area of each of the points
+effective antibiotic appears to be neomycin - Streptomycin seems to be
+the next most effective antibiotic, while penicilin seems to be the
+least effective of the three - Which of your visuals above (1 through 5)
+is **most effective** at helping to answer this question? - The most
+effective visual to answer this question was Visual 2. - Why? - I was
+able to analyze the effectiveness of each of the antibiotics by their
+position along the x and y axis for streptomycin and penicilin - for the
+third antibiotic i am able to determine the effectiveness based on the
+area of each of the points
 
 #### Guiding Question 2
 
@@ -328,10 +351,13 @@ Diplococcus pneumoniae was renamed Streptococcus pneumoniae as it was
 found to be more associated with the streptococcus genus - Which of your
 visuals above (1 through 5) is **most effective** at helping to answer
 this question? - Visual 5 was most effective in helping me answer this
-question - Why? - The most common type of bacteria in this dataset that
-were gram positive were the Streptococcus bacteria - the Diplococcus
-pneumoniae bacteria is also gram positive, which means it shares traits
-with Streptococcus bacteria, possibly contributing to its renaming
+question - Why? - The Diplococcus pneumoniae seems to have more similar
+traits to other streptococcus bacteria, as exhibited in visuals 2, 3,
+and 5 - Visual 2 shows that Diploccocus has very similar MIC values for
+the three types of bacteria as other streptococcus bacteria - Visual 3
+shows a similar relationship, this time just for penicilin - Visual 5
+shows that Diploccocus pneumoniae exhibits similar MIC values as other
+streptococus bacteria in the heatmap
 
 # References
 
