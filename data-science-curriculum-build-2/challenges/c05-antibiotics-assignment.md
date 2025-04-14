@@ -288,7 +288,8 @@ df_q15 <- df_antibiotics %>%
     cols = c(penicillin, streptomycin, neomycin), # Columns to pivot
     names_to = "antibiotic",
     values_to = "mic" 
-  )
+  ) %>% 
+  mutate(bacteria = fct_reorder(bacteria, mic))
 
 df_q15 %>% 
   ggplot(aes(x = antibiotic, y = bacteria)) +
@@ -327,15 +328,19 @@ opportunity to think about why this is.**
 > bacteria of different genera and Gram stain?
 
 *Observations* - What is your response to the question above? - The most
-effective antibiotic appears to be neomycin - Streptomycin seems to be
-the next most effective antibiotic, while penicilin seems to be the
-least effective of the three - Which of your visuals above (1 through 5)
-is **most effective** at helping to answer this question? - The most
-effective visual to answer this question was Visual 2. - Why? - I was
-able to analyze the effectiveness of each of the antibiotics by their
-position along the x and y axis for streptomycin and penicilin - for the
-third antibiotic i am able to determine the effectiveness based on the
-area of each of the points
+effective antibiotic appears to be neomycin - Penicillin seems to be the
+next most effective antibiotic, while streptomycin seems to be the least
+effective of the three - Which of your visuals above (1 through 5) is
+**most effective** at helping to answer this question? - The most
+effective visual to answer this question was Visual 1. - Why? - I was
+able to determine that neomycin is the most effective as there were a
+large amount of points with small area on the graph, signifying smaller
+MIC values for neomycin and thus higher effectivity - I then determined
+that penicillin was the 2nd most effective antibiotic as there were a
+greater amount of points located below the 0.1 mark (which is the max
+MIC value acceptable for humans) on the penicilin axis than the
+streptomycin axis - I then was able to determine that streptomycin was
+the least effective
 
 #### Guiding Question 2
 
