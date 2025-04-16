@@ -445,7 +445,10 @@ compare population with income.
 ``` r
 ## TODO: Join df_q4 and df_pop by the appropriate column
 
-df_data <- left_join(df_q4, df_pop %>% select(Geography, population_estimate), by = "Geography")
+df_data <- left_join(df_q4, df_pop %>% select(
+  Geography, population_estimate), 
+  by = "Geography"
+  )
   
 df_data
 ```

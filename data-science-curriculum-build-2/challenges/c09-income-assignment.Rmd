@@ -228,7 +228,10 @@ One last wrangling step: We need to join the two datasets so we can compare popu
 ```{r q5-task}
 ## TODO: Join df_q4 and df_pop by the appropriate column
 
-df_data <- left_join(df_q4, df_pop %>% select(Geography, population_estimate), by = "Geography")
+df_data <- left_join(df_q4, df_pop %>% select(
+  Geography, population_estimate), 
+  by = "Geography"
+  )
   
 df_data
 ```
