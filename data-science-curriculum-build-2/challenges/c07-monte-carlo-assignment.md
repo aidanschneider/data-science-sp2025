@@ -198,8 +198,8 @@ square $x \in [0, 1]$ and $y \in [0, 1]$.
 ## TASK: Choose a sample size and generate samples
 n <- 100
 df_q1 <- 
-  tibble(x = seq(-5, +5, length.out = 100)) %>% 
-  mutate(y = dunif(x, min = -1, max = +1))
+  tibble(x = runif(100, min = 0, max = 1)) %>% 
+  mutate(y = runif(100, min = 0, max = 1))
 ```
 
 Use the following to check that you’ve used the correct variable names.
@@ -256,7 +256,17 @@ stat <- function(x, y) {
     return(0) 
     }
 }
+
+stat(1, 1)
 ```
+
+    ## [1] 0
+
+``` r
+stat(0.5, 0.5)
+```
+
+    ## [1] 4
 
 Implement your own assert statements. They should pass using your
 implementation of `stat()`, *but* they should also be *correct*.
@@ -299,12 +309,13 @@ print("Your assertions passed, but make sure they're checking the right thing!")
 
 - You chose a correct value of `stat(x, y)` when `x, y` is *outside* the
   circle. Why did you choose this value?
-  - Since the radius of the circle is 1, we know that (0.5, 0.5) is
-    inside the circle and thus is an element of Sc.
+  - I chose 0 as the indicator function for our approximation of pi must
+    take 0 if the unform random variable does not land in the circle.
 - You chose a correct value of `stat(x, y)` when `x, y` is *inside* the
-  circle. Why did you choose this value? -Since the radius of the circle
-  is 1, we know that (1.5, 1.5) is outside the circle and thus not an
-  element of Sc (but rather St).
+  circle. Why did you choose this value?
+  - I chose 4 as we multiply the chance a uniform random variable lands
+    in the circle by that amount to ensure that we are approximating for
+    pi instead of pi/4.
 
 ### **q3** Estimate $\pi$
 
@@ -315,15 +326,17 @@ Using your data in `df_q1`, estimate $\pi$.
 df_q3 <- 
   df_q1 %>%
   # TODO: Estimate pi as the column `pi_est`
-  mutate(inside_circle = ifelse(x^2 + y^2 <= 1, 1, 0)) %>%
-  summarise(pi_est = 4 * mean(inside_circle))
+  rowwise() %>%               
+  mutate(value = stat(x, y)) %>%  
+  ungroup() %>%               
+  summarise(pi_est = mean(value))
 df_q3
 ```
 
     ## # A tibble: 1 × 1
     ##   pi_est
     ##    <dbl>
-    ## 1  0.720
+    ## 1   2.96
 
 Use the following to check that you’ve used the correct variable names.
 (NB. This does not check correctness.)
@@ -404,7 +417,7 @@ df_q4 %>%
 
 - What is a range of plausible values, based on the sampling
   distribution you’ve generated?
-  - A range of plausible values would be 0.4-1.1
+  - A range of plausible values would be 2.75-3.25
 
 ### **q5** Bootstrap percentile confidence interval
 
@@ -416,12 +429,13 @@ level (`alpha = 0.05`).
 
 ``` r
 ## TASK: Compute a bootstrap confidence interval at the 95% level (alpha = 0.05)
+alpha = 0.05
 df_q5 <- 
   df_q4 %>% 
   summarize(
     # TODO: Compute pi_lo and pi_up
-    pi_lo = quantile(pi_est, 0.025),
-    pi_up = quantile(pi_est, 0.075),
+    pi_lo = quantile(pi_est, alpha/2),
+    pi_up = quantile(pi_est, 1-alpha/2),
   )
 
 df_q5
@@ -430,7 +444,7 @@ df_q5
     ## # A tibble: 1 × 2
     ##   pi_lo pi_up
     ##   <dbl> <dbl>
-    ## 1 0.439  0.52
+    ## 1   2.6  3.28
 
 ### **q6** CLT confidence interval
 
@@ -446,52 +460,54 @@ in both q5 and q6. If they disagree strongly, that suggests that you’ve
 done something *wrong* in one of the tasks….
 
 ``` r
-df_q1 %>% 
+df_q1 %>%
+    rowwise() %>%                
+    mutate(value = stat(x, y)) %>%  
+    ungroup() %>%
     mutate(
-    sample_mean = mean(x),
-    sd_uniform = sqrt((1 - (-1))^2 / 12),  
+    sample_mean = mean(value),
+    sd_uniform = sd(value),  
     se = sd_uniform / sqrt(n),
     lo = sample_mean - 1.96 * se,  
     hi = sample_mean + 1.96 * se  
     )
 ```
 
-    ## # A tibble: 100 × 7
-    ##        x     y sample_mean sd_uniform     se     lo    hi
-    ##    <dbl> <dbl>       <dbl>      <dbl>  <dbl>  <dbl> <dbl>
-    ##  1 -5        0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  2 -4.90     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  3 -4.80     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  4 -4.70     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  5 -4.60     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  6 -4.49     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  7 -4.39     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  8 -4.29     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ##  9 -4.19     0    7.11e-17      0.577 0.0577 -0.113 0.113
-    ## 10 -4.09     0    7.11e-17      0.577 0.0577 -0.113 0.113
+    ## # A tibble: 100 × 8
+    ##         x     y value sample_mean sd_uniform    se    lo    hi
+    ##     <dbl> <dbl> <dbl>       <dbl>      <dbl> <dbl> <dbl> <dbl>
+    ##  1 0.869  0.551     0        2.96       1.76 0.176  2.61  3.31
+    ##  2 0.491  0.231     4        2.96       1.76 0.176  2.61  3.31
+    ##  3 0.768  0.985     0        2.96       1.76 0.176  2.61  3.31
+    ##  4 0.0521 0.931     4        2.96       1.76 0.176  2.61  3.31
+    ##  5 0.150  0.446     4        2.96       1.76 0.176  2.61  3.31
+    ##  6 0.243  0.258     4        2.96       1.76 0.176  2.61  3.31
+    ##  7 0.640  0.300     4        2.96       1.76 0.176  2.61  3.31
+    ##  8 0.982  0.927     0        2.96       1.76 0.176  2.61  3.31
+    ##  9 0.0311 0.782     4        2.96       1.76 0.176  2.61  3.31
+    ## 10 0.148  0.407     4        2.96       1.76 0.176  2.61  3.31
     ## # ℹ 90 more rows
 
 **Observations**:
 
 - Does your intervals include the true value of $\pi$?
-  - (Bootstrap CI: yes or no?) No
-  - (CLT CI: yes or no?) No
+  - (Bootstrap CI: yes or no?) Yes
+  - (CLT CI: yes or no?) Yes
 - How closely do your bootstrap CI and CLT CI agree?
-  - (Your answer here) They do not seem drastically far from eachother,
-    but I am unsure as I may have calculated incorrectly.
+  - (Your answer here) They are very similar
 - Comment on the width of your CI(s). Would your estimate of $\pi$ be
   good enough for roughly estimating an area (e.g., to buy enough paint
   for an art project)? Would your estimate of $\pi$ be good enough for
   precisely calculating a trajectory (e.g., sending a rocket into
   orbit)?
-  - (Good enough as a rough estimate?) As a *very* rough estimate it
-    would suffice
-  - (Good enough as a precise estimate?) This would not be sufficient
-    for a precise estimate, it is very far from the true value of pi.
+  - (Good enough as a rough estimate?) This would suffice for a good
+    rough estimate of pi
+  - (Good enough as a precise estimate?) This would not suffice for a
+    precise estimate a the confidence interval is too high
 - What would be a *valid* way to make your CI more narrow?
-  - (Your answer here) I don’t think I did the right steps to calculate
-    pi using CI and CLT, so i’d appreciate feedback on where I went
-    wrong.
+  - (Your answer here) We could use a larger sampling size which would
+    result in reduced margin of error (due to more data points), thus
+    causing a narrower CI
 
 # References
 
