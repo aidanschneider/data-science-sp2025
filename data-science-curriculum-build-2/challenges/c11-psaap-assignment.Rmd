@@ -1,7 +1,7 @@
 ---
 title: "Regression Case Study: PSAAP II"
-author: "(Your name here)"
-date: 2020-
+author: "Aidan Schneider"
+date: 2025-04-20
 output:
   github_document:
     toc: true
@@ -72,11 +72,19 @@ Figure 1. An example simulation, frozen at a specific point in time. An initial 
 
 ```{r q1-task}
 ## TODO: Perform your initial checks
+
+df_psaap %>% 
+  glimpse() 
+
+df_psaap %>% 
+  summary()
 ```
 
 **Observations**:
 
-- (Take notes here!)
+- Many variables!
+- The only variables present in the dataset are about fluid dynamics, radiation, and temperature
+- We know that this dataset pertains to air, which makes sense as the values for viscosity and density are small 
 
 The important variables in this dataset are:
 
@@ -113,6 +121,21 @@ The primary output of interest is `T_norm = (avg_T - T_f) / T_f`, the normalized
 ## TODO: Visualize the data in df_psaap with T_norm against x;
 ##       design your visual to handle the multiple simulations,
 ##       each identified by different values of idx
+
+df_q2 <- df_psaap[,c("x", "idx", "T_norm")]
+
+df_q2 %>% 
+  ggplot(aes(x = idx, y = T_norm)) +
+  geom_violin() +
+  geom_jitter() +
+  facet_grid(~x) +
+  labs(
+    title = "Normalized fluid temperature rise at different channel locations: multiple simulations",
+     y = "Simulations",
+     x = "Normalized fluid temperature rise"
+  )
+
+df_q2
 ```
 
 ## Modeling
@@ -122,7 +145,7 @@ The following chunk will split the data into training and validation sets.
 ```{r data-split}
 ## NOTE: No need to edit this chunk
 # Addl' Note: These data are already randomized by idx; no need
-# to additionally shuffle the data!
+# to additionally shuffle the data! 
 df_train <- df_psaap %>% filter(idx %in% 1:20)
 df_validate <- df_psaap %>% filter(idx %in% 21:36)
 ```
@@ -149,18 +172,26 @@ fit_nonphysical <-
 
 ## TODO: Compute a measure of accuracy for each fit above;
 ##       compare their relative performance
+
+mse(fit_baseline, df_train)
+
+mse(fit_cheat, df_train)
+
+mse(fit_nonphysical, df_train)
 ```
 
 **Observations**:
 
 - Which model is *most accurate*? Which is *least accurate*?
-  - (Your response here)
+  - The most accurate model is the cheat model, the next most accurate model is the baseline model, and the least accurate model is the non-physical model
 - What *Category* of variable is `avg_T`? Why is it such an effective predictor?
-  - (Your response here)
+  - Avg_T is in the output category
+  - It is an effective predictor as it takes the average temperature across a plane, which is heavily correlated with the other variables we are considering, x and T_norm, as x is position and T_norm is normalized temperature. 
 - Would we have access to `avg_T` if we were trying to predict a *new* value of `T_norm`? Is `avg_T` a valid predictor?
-  - (Your response here)
+  - We would not have access to avg_T as it is an output variable, thus making it an invalid predictor
 - What *Category* of variable is `idx`? Does it have any physical meaning?
-  - (Your response here)
+  - idx is in the Metadata category
+  - It doesnt have physical meaning, it just signifies the id of the simulation
 
 ### __q4__ Interpret this model
 
@@ -172,25 +203,33 @@ Interpret the following model by answering the questions below.
 ## TODO: Inspect the regression coefficients for the following model
 fit_q4 <- 
   df_train %>% 
-  # lm(formula = T_norm ~ . - idx - avg_q - avg_T - rms_T)
-  lm(formula = T_norm ~ L + W + U_0 + N_p + k_f + T_f)
+   lm(formula = T_norm ~ . - idx - avg_q - avg_T - rms_T)
+  # lm(formula = T_norm ~ L + W + U_0 + N_p + k_f + T_f)
   # lm(formula = T_norm ~ L - W - U_0 - N_p - k_f - T_f)
+
+fit_q4 
+
+df_psaap %>% 
+  summarise(sd(T_f)) 
 ```
 
 **Observations**:
 
 - Which columns are excluded in the model formula above? What categories do these belong to? Why are these important quantities to leave out of the model?
-  - (Your response here)
+  - The columns excluded are idx, avg_q, avg_T, and rms_T, which are all either output or metadata categories
+  - They were left out because they are outputs, so would not make good predictors 
 - Which inputs are *statistically significant*, according to the model?
-  - (Your response here)
+  - I0, h, C_pv,  C_fp, rho_p, U_0, N_p
 - What is the regression coefficient for `x`? What about the regression coefficient for `T_f`?
-  - (Your response here)
+  - x: 1.08
+  - T_f: -3.791e-4
 - What is the standard deviation of `x` in `df_psaap`? What about the standard deviation of `T_f`? 
-  - (Your response here)
+  - x: 0.28
+  - T_f: 38.94
 - How do these standard deviations relate to the regression coefficients for `x` and `T_f`?
-  - (Your response here)
+  - These values both indicate how influential a variable is on the model
 - Note that literally *all* of the inputs above have *some* effect on the output `T_norm`; so they are all "significant" in that sense. What does this tell us about the limitations of statistical significance for interpreting regression coefficients?
-  - (Your response here)
+  - relying on statistical significance can lead us to leave out values that are physically significant, especially in engineering or scienctific contexts
 
 ## Contrasting CI and PI
 
@@ -298,11 +337,12 @@ bind_rows(
 **Observations**:
 
 - Which model tends to be more accurate? How can you tell from this predicted-vs-actual plot?
-  - (Your response here)
+  - the q4 model tends to be more accurate
+  - I can tell this as the actual T_norm values tend to be close to their predicted values (aka more points inside the grey bar)
 - Which model tends to be *more confident* in its predictions? Put differently, which model has *narrower prediction intervals*?
-  - (Your response here)
+  - The q4 model tends to be more confident in its prediction intervals
 - How many predictors does the `fit_simple` model need in order to make a prediction? What about your model `fit_q4`?
-  - (Your response here)
+  - the fit_simple model needs only x as its predictors, while fit_q4 needs all values as its predictors
 
 Based on these results, you might be tempted to always throw every reasonable variable into the model. For some cases, that might be the best choice. However, some variables might be *outside our control*; for example, variables involving human behavior cannot be fully under our control. Other variables may be *too difficult to measure*; for example, it is *in theory* possible to predict the strength of a component by having detailed knowledge of its microstructure. However, it is *patently infeasible* to do a detailed study of *every single component* that gets used in an airplane.
 
@@ -337,7 +377,12 @@ pr_level <- 0.8
 #        use the validation data to check your uncertainty estimates, and 
 #        make a recommendation on a *dependable range* of values for T_norm
 #        at the point `df_design`
-fit_q6 <- NA
+
+
+# Note: I was not able to finish this one as I was had a hard time understanding
+# this process. I would like some help on this in class if possible. 
+
+
 
 ```
 
