@@ -127,7 +127,7 @@ df_q2 <- df_psaap[,c("x", "idx", "T_norm")]
 df_q2 %>% 
   ggplot(aes(x = idx, y = T_norm)) +
   geom_violin() +
-  geom_jitter() +
+  geom_jitter(height = 0) +
   facet_grid(~x) +
   labs(
     title = "Normalized fluid temperature rise at different channel locations: multiple simulations",
@@ -173,11 +173,11 @@ fit_nonphysical <-
 ## TODO: Compute a measure of accuracy for each fit above;
 ##       compare their relative performance
 
-mse(fit_baseline, df_train)
+mse(fit_baseline, df_validate)
 
-mse(fit_cheat, df_train)
+mse(fit_cheat, df_validate)
 
-mse(fit_nonphysical, df_train)
+mse(fit_nonphysical, df_validate)
 ```
 
 **Observations**:
@@ -186,7 +186,7 @@ mse(fit_nonphysical, df_train)
   - The most accurate model is the cheat model, the next most accurate model is the baseline model, and the least accurate model is the non-physical model
 - What *Category* of variable is `avg_T`? Why is it such an effective predictor?
   - Avg_T is in the output category
-  - It is an effective predictor as it takes the average temperature across a plane, which is heavily correlated with the other variables we are considering, x and T_norm, as x is position and T_norm is normalized temperature. 
+  - It is an effective predictor as it takes the average temperature across a plane, which is used to calculate T_norm as specified by the equation above 
 - Would we have access to `avg_T` if we were trying to predict a *new* value of `T_norm`? Is `avg_T` a valid predictor?
   - We would not have access to avg_T as it is an output variable, thus making it an invalid predictor
 - What *Category* of variable is `idx`? Does it have any physical meaning?
@@ -227,9 +227,11 @@ df_psaap %>%
   - x: 0.28
   - T_f: 38.94
 - How do these standard deviations relate to the regression coefficients for `x` and `T_f`?
-  - These values both indicate how influential a variable is on the model
+  - The standard deviations indicate the variation of each of the quantities
+  - The regression coefficients for x and T_f shows each of the value's change
+  - When combined, these values show the variation of the output based on x and T_f, which then informs us of the relative importance of x and T_f as predictors
 - Note that literally *all* of the inputs above have *some* effect on the output `T_norm`; so they are all "significant" in that sense. What does this tell us about the limitations of statistical significance for interpreting regression coefficients?
-  - relying on statistical significance can lead us to leave out values that are physically significant, especially in engineering or scienctific contexts
+  - relying on statistical significance can lead us to leave out values that are physically significant, especially in engineering or scientific contexts
 
 ## Contrasting CI and PI
 
@@ -379,25 +381,56 @@ pr_level <- 0.8
 #        at the point `df_design`
 
 
-# Note: I was not able to finish this one as I was had a hard time understanding
-# this process. I would like some help on this in class if possible. 
 
+fit_q6 <- 
+  df_train %>% 
+  lm(formula = T_norm ~ x + L + W + U_0) 
 
+df_uncertain <- df_design %>%  # Start with design data
+  add_uncertainties(
+    model = fit_q6,  # Reference the fitted model
+    interval = "prediction",
+    prefix = "pi",
+    level = pr_level
+  )
+
+df_uncertain
+
+mse(fit_q6, df_validate)
+
+df_uncertain_withpi <- df_validate %>% 
+  add_uncertainties(
+    model = fit_q6,
+    interval = "prediction",
+    prefix = "pi",
+    level = pr_level
+  )
+
+coverage <- df_uncertain_withpi %>% 
+  summarise(within_interval = mean(T_norm >= pi_lwr & T_norm <= pi_upr)) %>% 
+  pull(within_interval)
+
+coverage
 
 ```
 
 **Recommendation**:
 
 - How much do you trust your model? Why?
-  - (Your response here)
+  - I moderately trust my model as it uses physically significant predictors that match the design parameters
+  - It could be improved by adding more relevant, significant variables
+  - the MSE calculations show that the model has relatively good predictive power
 - What kind of interval---confidence or prediction---would you use for this task, and why?
-  - (Your response here)
+  - I would use prediction (which is what I used) because we need to account for uncertainty in the parameters and random variability in future observations
 - What fraction of validation cases lie within the intervals you predict? (NB. Make sure to calculate your intervals *based on the validation data*; don't just use one single interval!) How does this compare with `pr_level`?
-  - (Your response here)
+  - I found that about 93.3% of actual T_norm values fall within the prediction intervals
+  - My pr_level is greater than the provided pr_level
 - What interval for `T_norm` would you recommend the design team to plan around?
-  - (Your response here)
+  - The interval for T_norm they should plan around is 1.45685-2.296426
 - Are there any other recommendations you would provide?
-  - (Your response here)
+  - If the interval is too large, control more variables
+  - Validate with physical testing
+  - conduct additional analyses to identify which uncontrolled variables have the strongest impact on T_norm
 
 *Bonus*: One way you could take this analysis further is to recommend which other variables the design team should tightly control. You could do this by fixing values in `df_design` and adding them to the model. An exercise you could carry out would be to systematically test the variables to see which ones the design team should more tightly control.
 
