@@ -1,0 +1,93 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-04-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+library(ggrepel)
+library(scales)
+```
+
+## R Markdown
+
+```{r}
+filename <- "./challenges/data/DECENNIALCD1162010/DECENNIALCD1162010P9-Data.csv"
+df_census <- read_csv(filename)
+
+df_census 
+df_census %>% 
+   slice(2) %>%
+  mutate(
+    Total = as.numeric(P009001),
+    Hispanic = as.numeric(P009002),
+    White = as.numeric(P009005),
+    Black = as.numeric(P009006),
+    Asian = as.numeric(P009008),
+    Other = Total - (Hispanic + White + Black + Asian)
+  ) %>%
+  select(White, Hispanic, Black, Asian, Other, Total) %>%
+  pivot_longer(cols = c(White, Hispanic, Black, Asian, Other), names_to = "Group", values_to = "Count") %>%
+  mutate(Percent = 100 * Count / Total) %>%
+  ggplot(aes(x = "", y = Percent, fill = Group)) +
+    geom_col(width = 1, color = "white") +
+    coord_polar(theta = "y") +
+    labs(title = "Massachusetts Racial/Ethnic Composition (2010)", y = "Percent", x = NULL, fill = "Group") +
+    theme_void() +
+    geom_text(aes(label = paste0(round(Percent, 1), "%")), 
+              position = position_stack(vjust = 0.5), color = "black")
+
+
+
+```
+
+```{r}
+
+filename <- "./challenges/data/yg821jf8611_nv_statewide_2020_04_01.rds"
+df_nevada <- readRDS(filename)
+
+df_nevada
+```
+
+
+```{r}
+
+df_col <- df_nevada %>% 
+  group_by(subject_race, arrest_made) %>% 
+  summarise(n = n()) %>% 
+  mutate(Total = sum(n), Prop = n/Total) %>% 
+  filter(arrest_made == TRUE) %>% 
+  ungroup
+
+df_col %>% 
+  ggplot(aes(x = subject_race, y = Prop)) +
+  geom_col(fill = "#e08163") +
+  labs(
+    title = "Proportion of Arrests Made by Race (NV)",
+    x = "Race",
+    y = "Proportion of Arrest"
+  ) +
+  theme_minimal()
+
+
+```
+
+```{r}
+
+df_circle <- df_nevada %>%
+  count(subject_race) %>%
+  mutate(perc = n / sum(n),
+         legend_label = paste0(subject_race, " (", scales::percent(perc, accuracy = 0.1), ")"))
+
+ggplot(df_circle, aes(x = "", y = perc, fill = subject_race)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar("y") +
+  theme_void() +
+  labs(title = "Pie Chart of Subject Races (NV)", fill = "subject_race") +
+  scale_fill_discrete(labels = df_circle$legend_label)
+```
+
