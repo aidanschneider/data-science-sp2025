@@ -132,7 +132,6 @@ max_date
 - What is the difference between the two sets?
 - One includes more ethnicities/races than the other
 - one includes a None category
-- one is for the subject in the traffic stop while the other is for the officer
 
 ### __q4__ Check whether `subject_race` and `raw_Race` match for a large fraction of cases. Which of the two hypotheses above is most likely, based on your results?
 

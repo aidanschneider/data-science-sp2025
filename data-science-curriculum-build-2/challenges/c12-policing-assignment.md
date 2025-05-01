@@ -261,9 +261,6 @@ max_date
 
 - one includes a None category
 
-- one is for the subject in the traffic stop while the other is for the
-  officer
-
 ### **q4** Check whether `subject_race` and `raw_Race` match for a large fraction of cases. Which of the two hypotheses above is most likely, based on your results?
 
 *Note*: Just to be clear, I’m *not* asking you to do a *statistical*
